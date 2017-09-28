@@ -57,6 +57,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        LatLng ax = new LatLng(36.065802, -94.173934);
+        mMap.addMarker(new MarkerOptions().position(ax).title("Acxiom Lab"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(ax));
+
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
         }else{
