@@ -5,4 +5,9 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.uark.csce.helpahog.MapsActivity" />
+    tools:context="edu.uark.csce.helpahog.MapsActivity"
+    map:uiCompass="true"
+    map:mapType="normal"
+    map:cameraTargetLat="36.068693"
+    map:cameraTargetLng="-94.171468"
+    map:cameraZoom="17"/>

@@ -2,6 +2,7 @@ package edu.uark.csce.helpahog;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -15,6 +16,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
+
+import static edu.uark.csce.helpahog.R.id.map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener{
 
@@ -30,7 +35,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(map);
         mapFragment.getMapAsync(this);
     }
 
@@ -60,6 +65,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng ax = new LatLng(36.065802, -94.173934);
         mMap.addMarker(new MarkerOptions().position(ax).title("Acxiom Lab"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ax));
+
+        Polygon axLab = mMap.addPolygon(new PolygonOptions().add(new LatLng(36.065717, -94.173980), new LatLng(36.065927, -94.173996), new LatLng(36.065938, -94.173763), new LatLng(36.065791, -94.173720), new LatLng(36.065717, -94.173980)).strokeColor(Color.BLACK).fillColor(Color.RED));
 
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
