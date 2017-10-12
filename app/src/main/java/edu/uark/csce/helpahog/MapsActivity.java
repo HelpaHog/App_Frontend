@@ -66,7 +66,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(ax).title("Acxiom Lab"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ax));
 
-        Polygon axLab = mMap.addPolygon(new PolygonOptions().add(new LatLng(36.065717, -94.173980), new LatLng(36.065927, -94.173996), new LatLng(36.065938, -94.173763), new LatLng(36.065791, -94.173720), new LatLng(36.065717, -94.173980)).strokeColor(Color.BLACK).fillColor(Color.RED));
+        Polygon axLab = mMap.addPolygon(new PolygonOptions().add(new LatLng(36.070097, -94.176681), new LatLng(36.0701, -94.176831), new LatLng(36.070102, -94.176984), new LatLng(36.070107, -94.177282), new LatLng(36.069959, -94.177286), new LatLng(36.069815, -94.17729), new LatLng(36.06981, -94.176689), new LatLng(36.069811, -94.176688), new LatLng(36.069962, -94.176683), new LatLng(36.070097, -94.176681)).strokeColor(Color.BLACK).fillColor(Color.RED));
 
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
