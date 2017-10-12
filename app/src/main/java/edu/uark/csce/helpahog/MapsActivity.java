@@ -79,14 +79,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try{
             buildingsArray = new JSONArray(buildingsString);
 
-            for(int i=0; i< buildingsArray.length(); i++){
-                Log.i("MainActivity", buildingsArray.getJSONObject(i).getString("name")+" "+buildingsArray.getJSONObject(i).getString("shape"));
+            for(int i=0; i< buildingsArray.length(); i++) {
 
                 PolygonOptions options = new PolygonOptions();
                 ArrayList<LatLng> shapeCoordinates = shapeArray(buildingsArray.getJSONObject(i).getString("shape"));
 
-                for(int j=0; j < shapeCoordinates.size(); j++){
+                for (int j = 0; j < shapeCoordinates.size(); j++) {
                     options.add(shapeCoordinates.get(j));
+                    if (buildingsArray.getJSONObject(i).getString("code").equals("JBHT"))
+                        System.out.println(shapeCoordinates.get(j).toString());
                 }
 
                 options.strokeColor(Color.BLACK);
@@ -94,6 +95,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 mMap.addPolygon(options);
             }
+            shapeArray(buildingsArray.getJSONObject(64).getString("shape"));
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -120,18 +122,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Tokenizes the "shape" string for each JSON building element
     public ArrayList<LatLng> shapeArray(String input){
-        StringTokenizer strTok = new StringTokenizer(input, ", ");
-
+        String[] tokens = input.split(",");
         ArrayList<LatLng> coordArray = new ArrayList<>();
 
-        for(int i=0; i<strTok.countTokens(); i++){
-            String lat, lng;
-            if(strTok.hasMoreTokens()){
-                lat = strTok.nextToken();
-                lng = strTok.nextToken();
-                coordArray.add(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)));
-            }
+        for(int i=0; i<tokens.length; i++){
+            String[] tmp = tokens[i].split(" ");
+            String lat = tmp[0];
+            String lng = tmp[1];
 
+            coordArray.add(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)));
         }
         return coordArray;
     }
