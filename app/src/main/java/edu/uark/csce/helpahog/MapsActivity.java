@@ -12,18 +12,24 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.data.geojson.GeoJsonLayer;
+import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -80,18 +86,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             buildingsArray = new JSONArray(buildingsString);
 
             for(int i=0; i< buildingsArray.length(); i++) {
-
+                JSONObject currentBuilding = buildingsArray.getJSONObject(i);
                 PolygonOptions options = new PolygonOptions();
-                ArrayList<LatLng> shapeCoordinates = shapeArray(buildingsArray.getJSONObject(i).getString("shape"));
+                ArrayList<LatLng> shapeCoordinates = shapeArray(currentBuilding.getString("shape"));
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
                 for (int j = 0; j < shapeCoordinates.size(); j++) {
                     options.add(shapeCoordinates.get(j));
-                    if (buildingsArray.getJSONObject(i).getString("code").equals("JBHT"))
-                        System.out.println(shapeCoordinates.get(j).toString());
+                    builder.include(shapeCoordinates.get(j));
                 }
 
                 options.strokeColor(Color.BLACK);
                 options.fillColor(Color.RED);
+
+                LatLng position = new LatLng(Double.parseDouble(currentBuilding.getString("latitude")), Double.parseDouble(currentBuilding.getString("longitude")));
+
+                IconGenerator ig = new IconGenerator(getApplicationContext());
+                ig.setBackground(null);
+                ig.setTextAppearance(getApplicationContext(), R.style.labelAppearance);
+
+                googleMap.addGroundOverlay(new GroundOverlayOptions().position(position, 50).image(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(currentBuilding.getString("code"))))).setZIndex(100);
 
                 mMap.addPolygon(options);
             }
@@ -99,11 +113,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }catch(Exception e){
             e.printStackTrace();
         }
-
-
-        LatLng ax = new LatLng(36.065802, -94.173934);
-        mMap.addMarker(new MarkerOptions().position(ax).title("Acxiom Lab"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(ax));
 
 
 

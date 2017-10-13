@@ -3219,6 +3219,7 @@ containing a value of this type.
         public static final int amu_Bubble_TextAppearance_Dark=0x7f090160;
         public static final int amu_Bubble_TextAppearance_Light=0x7f090161;
         public static final int amu_ClusterIcon_TextAppearance=0x7f090162;
+        public static final int labelAppearance=0x7f090163;
     }
     public static final class styleable {
         /** Attributes that can be used with a ActionBar.
