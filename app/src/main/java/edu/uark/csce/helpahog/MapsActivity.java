@@ -19,6 +19,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -75,6 +77,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return (res == PackageManager.PERMISSION_GRANTED);
     }
 
+    ArrayList<Polygon> buildingPolyList = new ArrayList<>();
+    ArrayList<GroundOverlay> buildingLabels = new ArrayList<>();
+    boolean indoor_mode = false;
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -96,7 +102,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     builder.include(shapeCoordinates.get(j));
                 }
 
-                options.strokeColor(Color.BLACK);
+                options.strokeColor(Color.RED);
                 options.fillColor(Color.RED);
 
                 LatLng position = new LatLng(Double.parseDouble(currentBuilding.getString("latitude")), Double.parseDouble(currentBuilding.getString("longitude")));
@@ -105,14 +111,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 ig.setBackground(null);
                 ig.setTextAppearance(getApplicationContext(), R.style.labelAppearance);
 
-                googleMap.addGroundOverlay(new GroundOverlayOptions().position(position, 50).image(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(currentBuilding.getString("code"))))).setZIndex(100);
+                buildingLabels.add(mMap.addGroundOverlay(new GroundOverlayOptions().position(position, 50).image(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(currentBuilding.getString("code"))))));
+                buildingLabels.get(i).setZIndex(100);
 
-                mMap.addPolygon(options);
+                buildingPolyList.add(mMap.addPolygon(options));
             }
             shapeArray(buildingsArray.getJSONObject(64).getString("shape"));
         }catch(Exception e){
             e.printStackTrace();
         }
+
+        mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener(){
+            @Override
+            public void onCameraMove(){
+                float zoomLevel = mMap.getCameraPosition().zoom;
+                if(zoomLevel > 19){
+                    if(!indoor_mode) {
+                        indoor_mode = true;
+                        Log.i("Maps", "should show indoor maps now");
+                        for (int i = 0; i < buildingPolyList.size(); i++) {
+                            buildingPolyList.get(i).setVisible(false);
+                            buildingLabels.get(i).setVisible(false);
+                        }
+                    }
+                }else{
+                    if(indoor_mode){
+                        indoor_mode = false;
+                        for(int i=0; i < buildingPolyList.size(); i++){
+                            buildingPolyList.get(i).setVisible(true);
+                            buildingLabels.get(i).setVisible(true);
+                        }
+                        Log.i("Maps", "should show outdoor map now");
+                    }
+                }
+            }
+        });
 
 
 
@@ -128,7 +161,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public boolean onMyLocationButtonClick(){
         return false;
     }
-
     //Tokenizes the "shape" string for each JSON building element
     public ArrayList<LatLng> shapeArray(String input){
         String[] tokens = input.split(",");
