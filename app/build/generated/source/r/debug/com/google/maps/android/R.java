@@ -94,26 +94,26 @@ public final class R {
         public static final int amu_webview = 0x7f04001f;
     }
     public static final class raw {
-        public static final int amu_ballon_gx_prefix = 0x7f060000;
-        public static final int amu_basic_folder = 0x7f060001;
-        public static final int amu_basic_placemark = 0x7f060002;
-        public static final int amu_cdata = 0x7f060003;
-        public static final int amu_default_balloon = 0x7f060004;
-        public static final int amu_document_nest = 0x7f060005;
-        public static final int amu_draw_order_ground_overlay = 0x7f060006;
-        public static final int amu_extended_data = 0x7f060007;
-        public static final int amu_ground_overlay = 0x7f060008;
-        public static final int amu_ground_overlay_color = 0x7f060009;
-        public static final int amu_inline_style = 0x7f06000a;
-        public static final int amu_multigeometry_placemarks = 0x7f06000b;
-        public static final int amu_multiple_placemarks = 0x7f06000c;
-        public static final int amu_nested_folders = 0x7f06000d;
-        public static final int amu_nested_multigeometry = 0x7f06000e;
-        public static final int amu_poly_style_boolean_alpha = 0x7f06000f;
-        public static final int amu_poly_style_boolean_numeric = 0x7f060010;
-        public static final int amu_unknwown_folder = 0x7f060011;
-        public static final int amu_unsupported = 0x7f060012;
-        public static final int amu_visibility_ground_overlay = 0x7f060013;
+        public static final int amu_ballon_gx_prefix = 0x7f060001;
+        public static final int amu_basic_folder = 0x7f060002;
+        public static final int amu_basic_placemark = 0x7f060003;
+        public static final int amu_cdata = 0x7f060004;
+        public static final int amu_default_balloon = 0x7f060005;
+        public static final int amu_document_nest = 0x7f060006;
+        public static final int amu_draw_order_ground_overlay = 0x7f060007;
+        public static final int amu_extended_data = 0x7f060008;
+        public static final int amu_ground_overlay = 0x7f060009;
+        public static final int amu_ground_overlay_color = 0x7f06000a;
+        public static final int amu_inline_style = 0x7f06000b;
+        public static final int amu_multigeometry_placemarks = 0x7f06000c;
+        public static final int amu_multiple_placemarks = 0x7f06000d;
+        public static final int amu_nested_folders = 0x7f06000e;
+        public static final int amu_nested_multigeometry = 0x7f06000f;
+        public static final int amu_poly_style_boolean_alpha = 0x7f060010;
+        public static final int amu_poly_style_boolean_numeric = 0x7f060011;
+        public static final int amu_unknwown_folder = 0x7f060012;
+        public static final int amu_unsupported = 0x7f060013;
+        public static final int amu_visibility_ground_overlay = 0x7f060014;
     }
     public static final class string {
         public static final int common_google_play_services_enable_button = 0x7f070013;

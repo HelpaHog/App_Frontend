@@ -128,7 +128,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(zoomLevel > 19){
                     if(!indoor_mode) {
                         indoor_mode = true;
-                        Log.i("Maps", "should show indoor maps now");
                         for (int i = 0; i < buildingPolyList.size(); i++) {
                             buildingPolyList.get(i).setVisible(false);
                             buildingLabels.get(i).setVisible(false);
@@ -141,7 +140,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             buildingPolyList.get(i).setVisible(true);
                             buildingLabels.get(i).setVisible(true);
                         }
-                        Log.i("Maps", "should show outdoor map now");
                     }
                 }
             }
