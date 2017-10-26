@@ -133,61 +133,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onCameraMove(){
                 float zoomLevel = mMap.getCameraPosition().zoom;
 
-                int floor = 0;
-
-                if(zoomLevel > 19.3){
-                    if(floor != 5) {
-                        floor = 5;
-                        jbht_floor_1.setVisible(false);
-                        jbht_floor_2.setVisible(false);
-                        jbht_floor_3.setVisible(false);
-                        jbht_floor_4.setVisible(false);
-                        jbht_floor_5.setVisible(true);
-                    }
-                }else if(zoomLevel > 19){
-                    if(floor !=4) {
-                        floor = 4;
-                        jbht_floor_1.setVisible(false);
-                        jbht_floor_2.setVisible(false);
-                        jbht_floor_3.setVisible(false);
-                        jbht_floor_4.setVisible(true);
-                        jbht_floor_5.setVisible(false);
-                    }
-                }else if(zoomLevel > 18.6){
-                    if(floor !=3) {
-                        floor = 3;
-                        jbht_floor_1.setVisible(false);
-                        jbht_floor_2.setVisible(false);
-                        jbht_floor_3.setVisible(true);
-                        jbht_floor_4.setVisible(false);
-                        jbht_floor_5.setVisible(false);
-                    }
-                }else if(zoomLevel > 18.2){
-                    if(floor !=2) {
-                        floor = 2;
-                        jbht_floor_1.setVisible(false);
-                        jbht_floor_2.setVisible(true);
-                        jbht_floor_3.setVisible(false);
-                        jbht_floor_4.setVisible(false);
-                        jbht_floor_5.setVisible(false);
-                    }
-                }else if(zoomLevel > 17.8){
-                    if(floor !=1) {
-                        floor = 1;
-                        jbht_floor_1.setVisible(true);
-                        jbht_floor_2.setVisible(false);
-                        jbht_floor_3.setVisible(false);
-                        jbht_floor_4.setVisible(false);
-                        jbht_floor_5.setVisible(false);
-                    }
-                }
-
-                floorIndicator.setText("Showing Level " + floor);
-
-                if(zoomLevel > 17.8){
+                if(zoomLevel > 19){
                     floorIndicator.setVisibility(TextView.VISIBLE);
                     if(!indoor_mode) {
                         indoor_mode = true;
+                        jbht_floor_1.setVisible(true);
                         for (int i = 0; i < buildingPolyList.size(); i++) {
                             buildingPolyList.get(i).setVisible(false);
                             buildingLabels.get(i).setVisible(false);
@@ -197,7 +147,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }else{
                     if(indoor_mode){
                         indoor_mode = false;
-                        floor = 0;
                         floorIndicator.setVisibility(TextView.GONE);
                         jbht_floor_1.setVisible(false);
                         jbht_floor_2.setVisible(false);
