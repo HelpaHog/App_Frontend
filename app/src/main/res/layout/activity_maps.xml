@@ -26,15 +26,37 @@
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="24dp">
+        android:layout_marginTop="50dp">
         <ToggleButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textOn="1"
+            android:textOff="1"
             android:text="1"/>
         <ToggleButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textOn="2"
+            android:textOff="2"
             android:text="2"/>
+        <ToggleButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textOn="3"
+            android:textOff="3"
+            android:text="3"/>
+        <ToggleButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textOn="4"
+            android:textOff="4"
+            android:text="4" />
+        <ToggleButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textOn="5"
+            android:textOff="5"
+            android:text="5"/>
     </RadioGroup>
 
 

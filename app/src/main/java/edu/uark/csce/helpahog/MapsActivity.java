@@ -89,7 +89,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 for (int j = 0; j < shapeCoordinates.size(); j++) {
                     options.add(shapeCoordinates.get(j));
-
                     builder.include(shapeCoordinates.get(j));
                 }
 
