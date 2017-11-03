@@ -2819,16 +2819,18 @@ containing a value of this type.
         public static final int dining=0x7f060017;
         public static final int emergency_boxes=0x7f060018;
         public static final int historic_markers=0x7f060019;
-        public static final int parking_accessible=0x7f06001a;
-        public static final int parking_construction=0x7f06001b;
-        public static final int parking_meter=0x7f06001c;
-        public static final int parking_reserved=0x7f06001d;
-        public static final int parking_resident=0x7f06001e;
-        public static final int parking_short_term_meter=0x7f06001f;
-        public static final int parking_staff=0x7f060020;
-        public static final int parking_student=0x7f060021;
-        public static final int public_arts=0x7f060022;
-        public static final int scooter_parking=0x7f060023;
+        public static final int map_style_day=0x7f06001a;
+        public static final int map_style_night=0x7f06001b;
+        public static final int parking_accessible=0x7f06001c;
+        public static final int parking_construction=0x7f06001d;
+        public static final int parking_meter=0x7f06001e;
+        public static final int parking_reserved=0x7f06001f;
+        public static final int parking_resident=0x7f060020;
+        public static final int parking_short_term_meter=0x7f060021;
+        public static final int parking_staff=0x7f060022;
+        public static final int parking_student=0x7f060023;
+        public static final int public_arts=0x7f060024;
+        public static final int scooter_parking=0x7f060025;
     }
     public static final class string {
         public static final int abc_action_bar_home_description=0x7f070000;

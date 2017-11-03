@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.ui.IconGenerator;
@@ -25,7 +26,10 @@ import com.google.maps.android.ui.IconGenerator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import static edu.uark.csce.helpahog.R.id.map;
 
@@ -74,6 +78,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        int a,r,g,b;
+        int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if(time <= 6 || time >= 18){
+            a=0xff; r=0x91; g=0x00; b=0x00;
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style_night));
+        }else{
+            a=0xff; r=0xff; g=0x70; b=0x70;
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style_day));
+        }
+
         String buildingsString = getIntent().getStringExtra("jsonArray");
 
         JSONArray buildingsArray;
@@ -92,8 +107,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     builder.include(shapeCoordinates.get(j));
                 }
 
-                options.strokeColor(Color.RED);
-                options.fillColor(Color.RED);
+
+                options.strokeColor(Color.argb(a, r, g, b));
+                options.fillColor(Color.argb(a, r, g, b));
 
                 LatLng position = new LatLng(Double.parseDouble(currentBuilding.getString("latitude")), Double.parseDouble(currentBuilding.getString("longitude")));
 
@@ -134,6 +150,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if(zoomLevel > 19){
                     floorIndicator.setVisibility(TextView.VISIBLE);
+                    Log.i("Zoom Level", ""+zoomLevel);
                     if(!indoor_mode) {
                         indoor_mode = true;
                         jbht_floor_1.setVisible(true);
