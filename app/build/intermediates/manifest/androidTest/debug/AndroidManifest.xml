@@ -13,7 +13,7 @@
         android:label="Tests for edu.uark.csce.helpahog"
         android:targetPackage="edu.uark.csce.helpahog" />
 
-    <application>
+    <application android:debuggable="true" >
         <uses-library android:name="android.test.runner" />
     </application>
 

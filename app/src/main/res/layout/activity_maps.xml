@@ -27,35 +27,35 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginTop="50dp">
-        <ToggleButton
-            android:layout_width="match_parent"
+        <RadioButton
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOn="1"
-            android:textOff="1"
+            android:buttonTint="#FF0000"
+            android:textColor="#ff0000"
             android:text="1"/>
-        <ToggleButton
-            android:layout_width="match_parent"
+        <RadioButton
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOn="2"
-            android:textOff="2"
+            android:buttonTint="#FF0000"
+            android:textColor="#ff0000"
             android:text="2"/>
-        <ToggleButton
-            android:layout_width="match_parent"
+        <RadioButton
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOn="3"
-            android:textOff="3"
+            android:buttonTint="#FF0000"
+            android:textColor="#ff0000"
             android:text="3"/>
-        <ToggleButton
-            android:layout_width="match_parent"
+        <RadioButton
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOn="4"
-            android:textOff="4"
-            android:text="4" />
-        <ToggleButton
-            android:layout_width="match_parent"
+            android:buttonTint="#FF0000"
+            android:textColor="#ff0000"
+            android:text="4"/>
+        <RadioButton
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOn="5"
-            android:textOff="5"
+            android:buttonTint="#FF0000"
+            android:textColor="#ff0000"
             android:text="5"/>
     </RadioGroup>
 

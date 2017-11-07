@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -130,18 +131,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         LatLng jbht = new LatLng(36.0660869774214, -94.1737827243542);
 
+        ArrayList<GroundOverlay> tmp= new ArrayList<>();
+
         GroundOverlayOptions jbht_floor_1_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f1)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        final GroundOverlay jbht_floor_1 = mMap.addGroundOverlay(jbht_floor_1_options);
+        tmp.add(mMap.addGroundOverlay(jbht_floor_1_options));
         GroundOverlayOptions jbht_floor_2_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f2)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        final GroundOverlay jbht_floor_2 = mMap.addGroundOverlay(jbht_floor_2_options);
+        tmp.add(mMap.addGroundOverlay(jbht_floor_2_options));
         GroundOverlayOptions jbht_floor_3_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f3)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        final GroundOverlay jbht_floor_3 = mMap.addGroundOverlay(jbht_floor_3_options);
+        tmp.add(mMap.addGroundOverlay(jbht_floor_3_options));
         GroundOverlayOptions jbht_floor_4_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f4)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        final GroundOverlay jbht_floor_4 = mMap.addGroundOverlay(jbht_floor_4_options);
+        tmp.add(mMap.addGroundOverlay(jbht_floor_4_options));
         GroundOverlayOptions jbht_floor_5_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f5)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        final GroundOverlay jbht_floor_5 = mMap.addGroundOverlay(jbht_floor_5_options);
+        tmp.add(mMap.addGroundOverlay(jbht_floor_5_options));
+
+        final ArrayList<GroundOverlay> jbht_indoor_maps = tmp;
 
         final TextView floorIndicator = (TextView)findViewById(R.id.floor_indicator);
+        final RadioGroup floorSelector = (RadioGroup)findViewById(R.id.floor_selector);
+        floorSelector.setVisibility(RadioGroup.GONE);
+
+        floorSelector.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                for(int j=0; j<jbht_indoor_maps.size(); j++){
+                    jbht_indoor_maps.get(j).setVisible(false);
+                }
+                Log.i("CHECKED", ""+i);
+                jbht_indoor_maps.get(i-1).setVisible(true);
+            }
+        });
 
         mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener(){
             @Override
@@ -150,10 +168,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if(zoomLevel > 19){
                     floorIndicator.setVisibility(TextView.VISIBLE);
-                    Log.i("Zoom Level", ""+zoomLevel);
                     if(!indoor_mode) {
                         indoor_mode = true;
-                        jbht_floor_1.setVisible(true);
+                        floorSelector.check(1);
+                        floorSelector.setVisibility(RadioGroup.VISIBLE);
                         for (int i = 0; i < buildingPolyList.size(); i++) {
                             buildingPolyList.get(i).setVisible(false);
                             buildingLabels.get(i).setVisible(false);
@@ -163,12 +181,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }else{
                     if(indoor_mode){
                         indoor_mode = false;
-                        floorIndicator.setVisibility(TextView.GONE);
-                        jbht_floor_1.setVisible(false);
-                        jbht_floor_2.setVisible(false);
-                        jbht_floor_3.setVisible(false);
-                        jbht_floor_4.setVisible(false);
-                        jbht_floor_5.setVisible(false);
+                        floorSelector.setVisibility(RadioGroup.GONE);
+                        for(int i=0; i<jbht_indoor_maps.size(); i++){
+                            jbht_indoor_maps.get(i).setVisible(false);
+                        }
+
                         for(int i=0; i < buildingPolyList.size(); i++){
                             buildingPolyList.get(i).setVisible(true);
                             buildingLabels.get(i).setVisible(true);
