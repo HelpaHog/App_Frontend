@@ -2893,18 +2893,19 @@ public final class R {
     public static final int dining=0x7f0b0017;
     public static final int emergency_boxes=0x7f0b0018;
     public static final int historic_markers=0x7f0b0019;
-    public static final int map_style_day=0x7f0b001a;
-    public static final int map_style_night=0x7f0b001b;
-    public static final int parking_accessible=0x7f0b001c;
-    public static final int parking_construction=0x7f0b001d;
-    public static final int parking_meter=0x7f0b001e;
-    public static final int parking_reserved=0x7f0b001f;
-    public static final int parking_resident=0x7f0b0020;
-    public static final int parking_short_term_meter=0x7f0b0021;
-    public static final int parking_staff=0x7f0b0022;
-    public static final int parking_student=0x7f0b0023;
-    public static final int public_arts=0x7f0b0024;
-    public static final int scooter_parking=0x7f0b0025;
+    public static final int jbht_indoor=0x7f0b001a;
+    public static final int map_style_day=0x7f0b001b;
+    public static final int map_style_night=0x7f0b001c;
+    public static final int parking_accessible=0x7f0b001d;
+    public static final int parking_construction=0x7f0b001e;
+    public static final int parking_meter=0x7f0b001f;
+    public static final int parking_reserved=0x7f0b0020;
+    public static final int parking_resident=0x7f0b0021;
+    public static final int parking_short_term_meter=0x7f0b0022;
+    public static final int parking_staff=0x7f0b0023;
+    public static final int parking_student=0x7f0b0024;
+    public static final int public_arts=0x7f0b0025;
+    public static final int scooter_parking=0x7f0b0026;
   }
   public static final class string {
     public static final int abc_action_bar_home_description=0x7f0c0000;

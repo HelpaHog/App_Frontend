@@ -25,18 +25,22 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import static edu.uark.csce.helpahog.R.id.floor_selector;
 import static edu.uark.csce.helpahog.R.id.map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener{
 
     private GoogleMap mMap;
+    ArrayList<Building> buildings= new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,130 +76,81 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return (res == PackageManager.PERMISSION_GRANTED);
     }
 
-    ArrayList<Polygon> buildingPolyList = new ArrayList<>();
-    ArrayList<GroundOverlay> buildingLabels = new ArrayList<>();
-    boolean indoor_mode = false;
 
+    boolean indoor_mode = false;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        int a,r,g,b;
-        int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        if(time <= 6 || time >= 18){
-            a=0xff; r=0x91; g=0x00; b=0x00;
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style_night));
-        }else{
-            a=0xff; r=0xff; g=0x70; b=0x70;
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style_day));
-        }
+        //Get the buildings json array from the activity intent (it will be a string)
+        String buildingsString = getIntent().getStringExtra("BuildingsArray");
 
-        String buildingsString = getIntent().getStringExtra("jsonArray");
-
+        //put the json string into a json array
         JSONArray buildingsArray;
-
+        Building JBHT_TMP = null;
         try{
             buildingsArray = new JSONArray(buildingsString);
 
             for(int i=0; i< buildingsArray.length(); i++) {
+                //place the current building being rendered into a json object
                 JSONObject currentBuilding = buildingsArray.getJSONObject(i);
-                PolygonOptions options = new PolygonOptions();
-                ArrayList<LatLng> shapeCoordinates = shapeArray(currentBuilding.getString("shape"));
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-                for (int j = 0; j < shapeCoordinates.size(); j++) {
-                    options.add(shapeCoordinates.get(j));
-                    builder.include(shapeCoordinates.get(j));
+                try {
+                    buildings.add(new Building(currentBuilding, mMap, getApplicationContext()));
+                    if(buildings.get(buildings.size()-1).getCode().equals("JBHT")){
+                        JBHT_TMP = buildings.get(buildings.size()-1);
+                    }
+                }catch(ArrayIndexOutOfBoundsException e){
+                    Log.i("ERROR", currentBuilding.getString("code"));
                 }
-
-
-                options.strokeColor(Color.argb(a, r, g, b));
-                options.fillColor(Color.argb(a, r, g, b));
-
-                LatLng position = new LatLng(Double.parseDouble(currentBuilding.getString("latitude")), Double.parseDouble(currentBuilding.getString("longitude")));
-
-                IconGenerator ig = new IconGenerator(getApplicationContext());
-                ig.setBackground(null);
-                ig.setTextAppearance(getApplicationContext(), R.style.labelAppearance);
-
-                buildingLabels.add(mMap.addGroundOverlay(new GroundOverlayOptions().position(position, 50).image(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(currentBuilding.getString("code"))))));
-                buildingLabels.get(i).setZIndex(100);
-
-                buildingPolyList.add(mMap.addPolygon(options));
-
             }
-            shapeArray(buildingsArray.getJSONObject(64).getString("shape"));
+            JBHT_TMP.setIndoorMap(new JSONArray(getIntent().getStringExtra("JBHT_Indoor")));
+            final Building JBHT = JBHT_TMP;
+
+            //Arraylist because it must be final... stupid java stuff
+            final ArrayList<Integer> selected_floor = new ArrayList<>();
+
+            final TextView floorIndicator = (TextView)findViewById(R.id.floor_indicator);
+            final RadioGroup floorSelector = (RadioGroup)findViewById(R.id.floor_selector);
+            floorSelector.setVisibility(RadioGroup.GONE);
+
+            floorSelector.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                    JBHT.selectFloor(i);
+                    Log.i("CHECKED", ""+i);
+                }
+            });
+
+            mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener(){
+                @Override
+                public void onCameraMove(){
+                    float zoomLevel = mMap.getCameraPosition().zoom;
+                    if(zoomLevel > 19){
+                        if(!indoor_mode){
+                            indoor_mode = true;
+                            floorSelector.check(1);
+                            floorSelector.setVisibility(RadioGroup.VISIBLE);
+                        }
+                        for(int i=0; i<buildings.size(); i++){
+                            buildings.get(i).visible(false);
+                        }
+                    }else{
+                        if(indoor_mode){
+                            indoor_mode = false;
+                            floorSelector.check(0);
+                            floorSelector.setVisibility(RadioGroup.GONE);
+
+                            for(int i=0; i<buildings.size(); i++){
+                                buildings.get(i).visible(true);
+                            }
+                        }
+                    }
+                }
+            });
+
         }catch(Exception e){
             e.printStackTrace();
         }
-
-        LatLng jbht = new LatLng(36.0660869774214, -94.1737827243542);
-
-        ArrayList<GroundOverlay> tmp= new ArrayList<>();
-
-        GroundOverlayOptions jbht_floor_1_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f1)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        tmp.add(mMap.addGroundOverlay(jbht_floor_1_options));
-        GroundOverlayOptions jbht_floor_2_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f2)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        tmp.add(mMap.addGroundOverlay(jbht_floor_2_options));
-        GroundOverlayOptions jbht_floor_3_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f3)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        tmp.add(mMap.addGroundOverlay(jbht_floor_3_options));
-        GroundOverlayOptions jbht_floor_4_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f4)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        tmp.add(mMap.addGroundOverlay(jbht_floor_4_options));
-        GroundOverlayOptions jbht_floor_5_options = new GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.mipmap.jbht_f5)).position(jbht, 101f, 68f).bearing(93f).zIndex(200).visible(false);
-        tmp.add(mMap.addGroundOverlay(jbht_floor_5_options));
-
-        final ArrayList<GroundOverlay> jbht_indoor_maps = tmp;
-
-        final TextView floorIndicator = (TextView)findViewById(R.id.floor_indicator);
-        final RadioGroup floorSelector = (RadioGroup)findViewById(R.id.floor_selector);
-        floorSelector.setVisibility(RadioGroup.GONE);
-
-        floorSelector.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                for(int j=0; j<jbht_indoor_maps.size(); j++){
-                    jbht_indoor_maps.get(j).setVisible(false);
-                }
-                Log.i("CHECKED", ""+i);
-                jbht_indoor_maps.get(i-1).setVisible(true);
-            }
-        });
-
-        mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener(){
-            @Override
-            public void onCameraMove(){
-                float zoomLevel = mMap.getCameraPosition().zoom;
-
-                if(zoomLevel > 19){
-                    floorIndicator.setVisibility(TextView.VISIBLE);
-                    if(!indoor_mode) {
-                        indoor_mode = true;
-                        floorSelector.check(1);
-                        floorSelector.setVisibility(RadioGroup.VISIBLE);
-                        for (int i = 0; i < buildingPolyList.size(); i++) {
-                            buildingPolyList.get(i).setVisible(false);
-                            buildingLabels.get(i).setVisible(false);
-                        }
-
-                    }
-                }else{
-                    if(indoor_mode){
-                        indoor_mode = false;
-                        floorSelector.setVisibility(RadioGroup.GONE);
-                        for(int i=0; i<jbht_indoor_maps.size(); i++){
-                            jbht_indoor_maps.get(i).setVisible(false);
-                        }
-
-                        for(int i=0; i < buildingPolyList.size(); i++){
-                            buildingPolyList.get(i).setVisible(true);
-                            buildingLabels.get(i).setVisible(true);
-                        }
-                    }
-                }
-            }
-        });
-
-
 
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
@@ -208,19 +163,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public boolean onMyLocationButtonClick(){
         return false;
-    }
-    //Tokenizes the "shape" string for each JSON building element
-    public ArrayList<LatLng> shapeArray(String input){
-        String[] tokens = input.split(",");
-        ArrayList<LatLng> coordArray = new ArrayList<>();
-
-        for(int i=0; i<tokens.length; i++){
-            String[] tmp = tokens[i].split(" ");
-            String lat = tmp[0];
-            String lng = tmp[1];
-
-            coordArray.add(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)));
-        }
-        return coordArray;
     }
 }
