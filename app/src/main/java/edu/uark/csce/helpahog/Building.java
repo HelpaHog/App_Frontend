@@ -37,6 +37,9 @@ public class Building {
     public class Room{
         Polygon shape;
         String roomNumber;
+        LatLng position;
+        Marker label;
+
         public Room(Polygon _shape, String _roomNumber){
             shape = _shape;
             roomNumber = _roomNumber;
@@ -75,7 +78,7 @@ public class Building {
         int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
         //Set night mode if time is before 6am or 6pm local time
-        if(time <= 6 && time >= 18){
+        if(time <= 6 || time >= 18){
             a=0xff; r=0x91; g=0x00; b=0x00;
             map.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_night));
         }else{
@@ -88,7 +91,8 @@ public class Building {
             PolygonOptions options = parseBuildingShape(json.getString("shape"));
             shape = map.addPolygon(options);
             code = json.getString("code");
-            buildingLabel = map.addMarker(generateMarker());
+            buildingLabel = map.addMarker(generateMarker(code, position));
+            buildingLabel.setVisible(true);
         }catch(JSONException e){
             e.printStackTrace();
         }
@@ -121,6 +125,11 @@ public class Building {
 
     public void visible(boolean selection){
         shape.setVisible(selection);
+        buildingLabel.setVisible(selection);
+    }
+
+    public void labelVisible(boolean selection){
+        buildingLabel.setVisible(selection);
     }
 
     public String getCode(){
@@ -161,13 +170,13 @@ public class Building {
         INDOOR_LOADED = true;
     }
 
-    public MarkerOptions generateMarker() throws JSONException{
+    public MarkerOptions generateMarker(String text, LatLng labelPosition) throws JSONException{
         IconGenerator ig = new IconGenerator(context);
         ig.setBackground(null);
         ig.setTextAppearance(context, R.style.labelAppearance);
 
-        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(code)));
-        markerOptions.position(position);
+        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(text)));
+        markerOptions.position(labelPosition);
         return markerOptions;
     }
 
@@ -207,7 +216,7 @@ public class Building {
         }
 
         //sets the color of the buildings (see day/night mode above)
-        options.strokeColor(Color.argb(a, r, g, b));
+        options.strokeColor(Color.BLACK);
         options.fillColor(Color.argb(a, r, g, b));
         options.zIndex(100);
         return options;

@@ -57,7 +57,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
-
+    //Gets result of requesting location permissions
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults){
         switch(requestCode){
             case 1: {
@@ -70,6 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //Checks location permissions
     public boolean checkLocationPermission(){
         String permission = "android.permission.ACCESS_FINE_LOCATION";
         int res = this.checkCallingOrSelfPermission(permission);
@@ -77,7 +78,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    boolean indoor_mode = false;
+    boolean indoor_mode = false; //Used by class inside mMap, must be global
+    boolean SHOW_BUILDING_LABELS = false;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -91,6 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try{
             buildingsArray = new JSONArray(buildingsString);
 
+            //Render the building shapes
             for(int i=0; i< buildingsArray.length(); i++) {
                 //place the current building being rendered into a json object
                 JSONObject currentBuilding = buildingsArray.getJSONObject(i);
@@ -125,6 +128,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onCameraMove(){
                     float zoomLevel = mMap.getCameraPosition().zoom;
+                    Log.i("Zoom Level", ""+zoomLevel);
+                    if(zoomLevel > 16){
+                        if(!SHOW_BUILDING_LABELS){
+                            SHOW_BUILDING_LABELS = true;
+                            for(int i=0; i<buildings.size(); i++){
+                                buildings.get(i).labelVisible(true);
+                            }
+                        }
+                    }else{
+                        if(SHOW_BUILDING_LABELS){
+                            SHOW_BUILDING_LABELS = false;
+                            for(int i=0; i<buildings.size(); i++){
+                                buildings.get(i).labelVisible(false);
+                            }
+                        }
+                    }
+
                     if(zoomLevel > 19){
                         if(!indoor_mode){
                             indoor_mode = true;

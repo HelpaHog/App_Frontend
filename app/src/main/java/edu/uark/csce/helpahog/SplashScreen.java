@@ -27,14 +27,14 @@ public class SplashScreen extends AppCompatActivity {
         final Intent mainActivityIntent = new Intent(getApplicationContext(), MapsActivity.class);
         mainActivityIntent.putExtra("BuildingsArray", getJSONData(R.raw.buildings).toString());
         mainActivityIntent.putExtra("JBHT_Indoor", getJSONData(R.raw.jbht_indoor).toString());
-
-        new Timer().schedule(new TimerTask(){
+        startActivity(mainActivityIntent);
+        finish();
+        /*new Timer().schedule(new TimerTask(){
             @Override
             public void run(){
-                startActivity(mainActivityIntent);
-                finish();
+
             }
-        }, 2000);
+        }, 2000);*/
     }
 
     public JSONArray getJSONData(int id){
