@@ -47,9 +47,12 @@ public class Building {
     }
 
     private Polygon shape;
+    private PolygonOptions shapeOptions;
     private LatLng position;
+    private MarkerOptions labelOptions;
     private String code;
     private JSONObject json;
+    private JSONArray indoor_json;
 
     private Marker buildingLabel;
 
@@ -57,42 +60,30 @@ public class Building {
     public ArrayList<ArrayList<Polygon>> indoor_poly = new ArrayList<>();
 
     LatLngBounds.Builder builder = new LatLngBounds.Builder();      //builder for the building label
-    GoogleMap map;
     Context context;
 
     int a,r,g,b;
 
-    public Building(JSONObject _json, GoogleMap _map, Context _context){
-       newInstance(_json, _map, _context);
+    public Building(JSONObject _json, Context _context){
+       newInstance(_json, _context);
     }
 
     public Building(Building in){
-        newInstance(in.getJson(), in.getMap(), in.getContext());
+        newInstance(in.getJson(), in.getContext());
     }
 
-    private void newInstance(JSONObject _json, GoogleMap _map, Context _context){
+    private void newInstance(JSONObject _json, Context _context){
         json = _json;
         context = _context;
-        map = _map;
 
-        int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
-        //Set night mode if time is before 6am or 6pm local time
-        if(time <= 6 || time >= 18){
-            a=0xff; r=0x91; g=0x00; b=0x00;
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_night));
-        }else{
-            a=0xff; r=0xff; g=0x70; b=0x70;
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_day));
-        }
 
         try {
             position = new LatLng(Double.parseDouble(json.getString("latitude")), Double.parseDouble(json.getString("longitude")));
-            PolygonOptions options = parseBuildingShape(json.getString("shape"));
-            shape = map.addPolygon(options);
+            shapeOptions = parseBuildingShape(json.getString("shape"));
             code = json.getString("code");
-            buildingLabel = map.addMarker(generateMarker(code, position));
-            buildingLabel.setVisible(true);
+            labelOptions = generateMarker(code, position);
+            labelOptions.visible(true);
         }catch(JSONException e){
             e.printStackTrace();
         }
@@ -144,18 +135,14 @@ public class Building {
         return json;
     }
 
-    public GoogleMap getMap(){
-        return map;
-    }
-
-    public void setIndoorMap(JSONArray _indoorJSON) throws JSONException{
+    public void setIndoorMap(JSONArray _indoorJSON, GoogleMap map) throws JSONException{
         for(int i=0; i<_indoorJSON.length(); i++){
             ArrayList<Room> rooms = new ArrayList<>();
             ArrayList<Polygon> polygons = new ArrayList<>();
-            JSONArray array = _indoorJSON.getJSONArray(i);
+            indoor_json = _indoorJSON.getJSONArray(i);
 
-            for(int j=0; j< array.length(); j++){
-                JSONObject roomObject = array.getJSONObject(j);
+            for(int j=0; j< indoor_json.length(); j++){
+                JSONObject roomObject = indoor_json.getJSONObject(j);
 
                 Polygon roomShape = map.addPolygon(parseRoomShape(roomObject.getJSONArray("shape")));
                 polygons.add(roomShape);
@@ -184,6 +171,15 @@ public class Building {
     private PolygonOptions parseBuildingShape(String input) throws ArrayIndexOutOfBoundsException{
         PolygonOptions options = new PolygonOptions();
         String[] tokens = input.split(",");
+
+        int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+
+        //Set night mode if time is before 6am or 6pm local time
+        if(time <= 6 || time >= 18){
+            a=0xff; r=0x91; g=0x00; b=0x00;
+        }else{
+            a=0xff; r=0xff; g=0x70; b=0x70;
+        }
 
         for (int i = 0; i < tokens.length; i++) {
             String[] tmp = tokens[i].split(" ");
@@ -220,5 +216,17 @@ public class Building {
         options.fillColor(Color.argb(a, r, g, b));
         options.zIndex(100);
         return options;
+    }
+
+    //ONLY CALL ON UI THREAD!!!
+    public void addToMap(GoogleMap _map){
+        GoogleMap map = _map;
+
+        try{
+            shape = map.addPolygon(shapeOptions);
+            buildingLabel = map.addMarker(generateMarker(code, position));
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
     }
 }
