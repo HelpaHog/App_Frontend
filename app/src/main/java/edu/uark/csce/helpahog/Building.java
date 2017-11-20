@@ -2,13 +2,10 @@ package edu.uark.csce.helpahog;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -23,156 +20,70 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
- * Created by toren on 11/13/17.
- *
- * This is an object that will be used to store data for each
- * campus building.
+ * Created by toren on 11/20/17.
  */
 
-
-
 public class Building {
-    public boolean INDOOR_LOADED = false;
+    public boolean HAS_INDOOR_MAP = false;
 
-    public class Room{
-        Polygon shape;
-        String roomNumber;
-        LatLng position;
-        Marker label;
-
-        public Room(Polygon _shape, String _roomNumber){
-            shape = _shape;
-            roomNumber = _roomNumber;
-        }
-    }
-
-    private Polygon shape;
+    public Polygon shape;
     private PolygonOptions shapeOptions;
     private LatLng position;
+    public Marker label;
     private MarkerOptions labelOptions;
-    private String code;
+    private String buildingCode;
     private JSONObject json;
-    private JSONArray indoor_json;
 
-    private Marker buildingLabel;
+    public ArrayList<Floor> indoorMap;
 
-    public ArrayList<ArrayList<Room>> indoor = new ArrayList<>();
-    public ArrayList<ArrayList<Polygon>> indoor_poly = new ArrayList<>();
 
-    LatLngBounds.Builder builder = new LatLngBounds.Builder();      //builder for the building label
+    //Hex values for building polygon colors
+    int a, r, g, b;
+
+
+    LatLngBounds.Builder builder = new LatLngBounds.Builder();
     Context context;
 
-    int a,r,g,b;
 
     public Building(JSONObject _json, Context _context){
-       newInstance(_json, _context);
+        newInstance(_json, _context);
     }
 
+    //Copy constructor
     public Building(Building in){
-        newInstance(in.getJson(), in.getContext());
+        newInstance(in.getJSON(), in.getContext());
     }
 
+    //sets members when a new Building is instantiated
     private void newInstance(JSONObject _json, Context _context){
         json = _json;
         context = _context;
 
 
-
         try {
             position = new LatLng(Double.parseDouble(json.getString("latitude")), Double.parseDouble(json.getString("longitude")));
             shapeOptions = parseBuildingShape(json.getString("shape"));
-            code = json.getString("code");
-            labelOptions = generateMarker(code, position);
-            labelOptions.visible(true);
-        }catch(JSONException e){
+            buildingCode = json.getString("code");
+            labelOptions = generateMarker(buildingCode, position);
+
+            if(buildingCode.equals("JBHT"))
+                HAS_INDOOR_MAP = true;
+
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    int currentFloorShown = -1;
-    public void selectFloor(int i){
-        if (currentFloorShown != -1) {
-            //Set everything to invisible
-            for (int j = 0; j < indoor_poly.get(currentFloorShown).size(); j++) {
-                indoor_poly.get(currentFloorShown).get(j).setVisible(false);
-            }
-        }
-        if(i!=0) {
-            //Set selected floor visible
-            for (int j = 0; j < indoor_poly.get(i - 1).size(); j++) {
-                indoor_poly.get(i - 1).get(j).setVisible(true);
-                currentFloorShown = i - 1;
-            }
-        }
-
-    }
-    public Polygon getShape(){
-        return shape;
-    }
-
-    public LatLng getPosition(){
-        return position;
-    }
-
-    public void visible(boolean selection){
-        shape.setVisible(selection);
-        buildingLabel.setVisible(selection);
-    }
-
-    public void labelVisible(boolean selection){
-        buildingLabel.setVisible(selection);
-    }
-
-    public String getCode(){
-        return code;
-    }
-
-    public Context getContext(){
-        return context;
-    }
-
-    public JSONObject getJson(){
-        return json;
-    }
-
-    public void setIndoorMap(JSONArray _indoorJSON, GoogleMap map) throws JSONException{
-        for(int i=0; i<_indoorJSON.length(); i++){
-            ArrayList<Room> rooms = new ArrayList<>();
-            ArrayList<Polygon> polygons = new ArrayList<>();
-            indoor_json = _indoorJSON.getJSONArray(i);
-
-            for(int j=0; j< indoor_json.length(); j++){
-                JSONObject roomObject = indoor_json.getJSONObject(j);
-
-                Polygon roomShape = map.addPolygon(parseRoomShape(roomObject.getJSONArray("shape")));
-                polygons.add(roomShape);
-
-                Room room = new Room(roomShape, roomObject.getString("room"));
-                rooms.add(room);
-            }
-            indoor.add(rooms);
-            indoor_poly.add(polygons);
-        }
-
-        INDOOR_LOADED = true;
-    }
-
-    public MarkerOptions generateMarker(String text, LatLng labelPosition) throws JSONException{
-        IconGenerator ig = new IconGenerator(context);
-        ig.setBackground(null);
-        ig.setTextAppearance(context, R.style.labelAppearance);
-
-        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(text)));
-        markerOptions.position(labelPosition);
-        return markerOptions;
-    }
 
     //Parses the shape of the building from a JSON String
     private PolygonOptions parseBuildingShape(String input) throws ArrayIndexOutOfBoundsException{
         PolygonOptions options = new PolygonOptions();
         String[] tokens = input.split(",");
 
+
+        //Get the time of day
         int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+
 
         //Set night mode if time is before 6am or 6pm local time
         if(time <= 6 || time >= 18){
@@ -181,6 +92,8 @@ public class Building {
             a=0xff; r=0xff; g=0x70; b=0x70;
         }
 
+
+        //Split each latlng value delimited by a space character
         for (int i = 0; i < tokens.length; i++) {
             String[] tmp = tokens[i].split(" ");
             String lat = tmp[0];
@@ -190,6 +103,7 @@ public class Building {
             builder.include(new LatLng(Double.parseDouble(lat), Double.parseDouble(lng)));
         }
 
+
         //sets the color of the buildings (see day/night mode above)
         options.strokeColor(Color.argb(a, r, g, b));
         options.fillColor(Color.argb(a, r, g, b));
@@ -197,14 +111,149 @@ public class Building {
         return options;
     }
 
-    //Parses the shape of the building from a JSON String
-    private PolygonOptions parseRoomShape(JSONArray input) throws ArrayIndexOutOfBoundsException{
+    public MarkerOptions generateMarker(String text, LatLng labelPosition) throws JSONException {
+        IconGenerator ig = new IconGenerator(context);
+        ig.setBackground(null);
+        ig.setTextAppearance(context, R.style.labelAppearance);
+
+        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(text)));
+        markerOptions.position(labelPosition);
+        return markerOptions;
+    }
+
+    public void setLabelVisible(boolean selection){
+        label.setVisible(selection);
+    }
+
+    public void setBuildingVisible(boolean selection){
+        shape.setVisible(selection);
+    }
+
+
+    public JSONObject getJSON(){
+        return json;
+    }
+
+    public Context getContext(){
+        return context;
+    }
+
+    public PolygonOptions getPolygonOptions(){
+        return shapeOptions;
+    }
+
+    public MarkerOptions getLabelOptions(){
+        return labelOptions;
+    }
+
+    public String getBuildingCode(){
+        return buildingCode;
+    }
+}
+
+class Floor{
+    public ArrayList<Room> rooms;
+    public JSONArray floorArray;
+
+    Context context;
+
+    public Floor(Context _context, JSONArray _floorArray){
+        context = _context;
+        floorArray = _floorArray;
+        rooms = parseRooms();
+    }
+
+    //Parse all of the room objects from the json file to a Room object
+    private ArrayList<Room> parseRooms(){
+        ArrayList<Room> tmp = new ArrayList<>();
+        for(int i=0; i<floorArray.length(); i++){
+            try {
+                Room room = new Room(context, floorArray.getJSONObject(i));
+                tmp.add(room);
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+
+        return tmp;
+    }
+
+    public void setRoomLabelsVisible(boolean selection){
+        for(int i=0; i<rooms.size(); i++){
+            rooms.get(i).setLabelVisible(selection);
+        }
+    }
+
+    public void setRoomsVisible(boolean selection){
+        for(int i=0; i<rooms.size(); i++){
+            rooms.get(i).setRoomVisible(selection);
+        }
+    }
+}
+
+class Room{
+    private PolygonOptions shapeOptions;
+    private MarkerOptions  labelOptions;
+    private JSONObject jsonObject;
+
+    public Polygon shape;
+    public Marker label;
+    public String roomNumber;
+    public LatLng position;
+
+    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+    Context context;
+
+    int a, r, g, b;
+
+
+    public Room(Context _context, JSONObject _jsonObject){
+        context = _context;
+        jsonObject = _jsonObject;
+
+        a=0xFF; r=0x68; g=0x68; b=0x68;
+
+        shapeOptions = parseRoomShape();
+        position = parsePosition();
+        roomNumber = parseRoomNumber();
+        labelOptions = generateMarker(roomNumber, position);
+    }
+
+    //Get the room number from the json object
+    private String parseRoomNumber(){
+        try{
+            return jsonObject.getString("room");
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //put the position from the json object into a LatLng object
+    private LatLng parsePosition(){
+        try {
+            double lat = jsonObject.getJSONArray("position").getDouble(0);
+            double lng = jsonObject.getJSONArray("position").getDouble(1);
+
+            LatLng pos = new LatLng(lat, lng);
+            return pos;
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //parse the shape of the room from the json object to a polygonsoptions object
+    private PolygonOptions parseRoomShape(){
         PolygonOptions options = new PolygonOptions();
         try {
-            for (int i = 0; i < input.length(); i++) {
-                double lat = input.getDouble(i);
-                double lng = input.getDouble(++i);
-                options.add(new LatLng(lat, lng)).visible(false);
+            JSONArray shapeArray = jsonObject.getJSONArray("shape");
+
+            for (int i = 0; i < shapeArray.length(); i++) {
+                double lat = shapeArray.getDouble(i);
+                double lng = shapeArray.getDouble(++i);
+                options.add(new LatLng(lat, lng)).visible(true);
                 builder.include(new LatLng(lat, lng));
             }
         }catch(JSONException e){
@@ -218,15 +267,30 @@ public class Building {
         return options;
     }
 
-    //ONLY CALL ON UI THREAD!!!
-    public void addToMap(GoogleMap _map){
-        GoogleMap map = _map;
+    //Create a marker with the room number as an icon
+    private MarkerOptions generateMarker(String text, LatLng labelPosition){
+        IconGenerator ig = new IconGenerator(context);
+        ig.setBackground(null);
+        ig.setTextAppearance(context, R.style.labelAppearance);
 
-        try{
-            shape = map.addPolygon(shapeOptions);
-            buildingLabel = map.addMarker(generateMarker(code, position));
-        }catch(JSONException e){
-            e.printStackTrace();
-        }
+        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(ig.makeIcon(text)));
+        markerOptions.position(labelPosition);
+        return markerOptions;
+    }
+
+    public PolygonOptions getShapeOptions(){
+        return shapeOptions;
+    }
+
+    public MarkerOptions getLabelOptions(){
+        return labelOptions;
+    }
+
+    public void setLabelVisible(boolean selection){
+        label.setVisible(selection);
+    }
+
+    public void setRoomVisible(boolean selection){
+        shape.setVisible(selection);
     }
 }
