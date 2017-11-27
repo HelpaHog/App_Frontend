@@ -64,7 +64,7 @@ public class Building {
             position = new LatLng(Double.parseDouble(json.getString("latitude")), Double.parseDouble(json.getString("longitude")));
             shapeOptions = parseBuildingShape(json.getString("shape"));
             buildingCode = json.getString("code");
-            labelOptions = generateMarker(buildingCode, position);
+            labelOptions = generateMarker(buildingCode, position).title(json.getString("name")).snippet(json.getString("address"));
 
             if(buildingCode.equals("JBHT"))
                 HAS_INDOOR_MAP = true;

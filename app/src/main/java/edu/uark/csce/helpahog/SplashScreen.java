@@ -1,5 +1,6 @@
 package edu.uark.csce.helpahog;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -28,6 +30,11 @@ public class SplashScreen extends AppCompatActivity {
 
         MapsInitializer.initialize(getApplicationContext());
 
+        Params params = new Params(getApplicationContext());
+        BuildingsLoader loader = new BuildingsLoader();
+        loader.execute(params);
+
+
         new Timer().schedule(new TimerTask(){
             @Override
             public void run(){
@@ -35,5 +42,24 @@ public class SplashScreen extends AppCompatActivity {
                 finish();
             }
         }, 2000);
+
+    }
+
+    class Params{
+        public Context context;
+        public Params(Context _context){
+            context = _context;
+        }
+    }
+
+    class BuildingsLoader extends AsyncTask<Params, Void, Void>{
+        public Void doInBackground(Params... params){
+            MapsActivity.BuildingsList.context = params[0].context;
+            MapsActivity.BuildingsList.buildings = new ArrayList<>();
+            MapsActivity.BuildingsList.getBuildings();
+            return null;
+        }
     }
 }
+
+

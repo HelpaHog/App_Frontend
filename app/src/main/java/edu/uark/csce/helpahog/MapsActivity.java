@@ -3,6 +3,8 @@ package edu.uark.csce.helpahog;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -54,6 +56,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
+
     }
 
 
@@ -184,6 +187,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
     public void setMapStyle(){
         int time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
 
@@ -195,13 +199,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public static class BuildingsList{
+        public static ArrayList<Building> buildings;
+        public static Building JBHT;
+        public static Context context;
+
+        public BuildingsList(){
+            buildings = new ArrayList<>();
+        }
+
+        public static void getBuildings(){
+            JSONArray jsonArray = JSONProvider.getJSONFromFile(context, R.raw.buildings);
+
+            for(int i=0; i<jsonArray.length(); i++){
+                try {
+                    JSONObject buildingObject = jsonArray.getJSONObject(i);
+                    Building currentBuilding = new Building(buildingObject, context);
+                    buildings.add(currentBuilding);
+                    Log.i("BUILDING", buildingObject.getString("code"));
+                    if(buildingObject.getString("code").equals("JBHT")){
+                        JBHT = new Building(currentBuilding);
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
     class BuildingsLoader extends AsyncTask<Params, Void, ArrayList<Building>>{
         protected ArrayList<Building> doInBackground(Params... params){
             ArrayList<Building> buildings = new ArrayList<>();
             JSONArray jsonArray = JSONProvider.getJSONFromFile(getApplicationContext(), R.raw.buildings);
 
 
-            for(int i=0; i<jsonArray.length(); i++){
+           /* for(int i=0; i<jsonArray.length(); i++){
                 try {
                     JSONObject buildingObject = jsonArray.getJSONObject(i);
                     Building currentBuilding = new Building(buildingObject, getApplicationContext());
@@ -211,15 +244,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }catch(Exception e){
                     e.printStackTrace();
                 }
-            }
+            }*/
+           buildings = BuildingsList.buildings;
             return buildings;
         }
 
         protected void onPostExecute(ArrayList<Building> result){
             if(buildings == null) {
                 for (int i = 0; i < result.size(); i++) {
-                    if (result.get(i).getBuildingCode().equals("JBHT"))
-                        JBHT = result.get(i);
+                    /*if (result.get(i).getBuildingCode().equals("JBHT"))
+                        JBHT = result.get(i);*/
 
                     buildings = result;
                     Building currentBuilding = result.get(i);
@@ -231,7 +265,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
             if(indoorMap == null){
-                indoorMap = getIndoorMap(JBHT);
+                indoorMap = getIndoorMap(BuildingsList.JBHT);
                 for(int i=0; i<indoorMap.size(); i++){
                     Floor floor = indoorMap.get(i);
                     for(int j=0; j < floor.rooms.size(); j++){
