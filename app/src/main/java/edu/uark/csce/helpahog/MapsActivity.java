@@ -129,6 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                         for(int i=0; i<buildings.size(); i++){
                             buildings.get(i).setBuildingVisible(true);
+                            buildings.get(i).setLabelVisible(true);
                         }
                         for(int i=0; i<indoorMap.size(); i++){
                             indoorMap.get(i).setRoomLabelsVisible(false);
@@ -143,8 +144,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                         for(int i=0; i<buildings.size(); i++){
                             buildings.get(i).setBuildingVisible(false);
+                            buildings.get(i).setLabelVisible(false);
                         }
-
 
                         floorSelector.check(1);
                         floorSelector.setVisibility(RadioGroup.VISIBLE);
@@ -321,6 +322,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             }
+        }
+    }
+
+    public class ExtraMarkerLoader extends AsyncTask<Params, Void, Void>{
+        protected Void doInBackground(Params... params){
+
+            return null;
+        }
+    }
+
+    public class ParkingLotLoader extends AsyncTask<Params, Void, Void>{
+        protected Void doInBackground(Params... params){
+
+            return null;
         }
     }
 }

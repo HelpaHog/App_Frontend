@@ -26,7 +26,6 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
-        final Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
 
         MapsInitializer.initialize(getApplicationContext());
 
@@ -35,14 +34,15 @@ public class SplashScreen extends AppCompatActivity {
         loader.execute(params);
 
 
-        new Timer().schedule(new TimerTask(){
+        /*new Timer().schedule(new TimerTask(){
             @Override
             public void run(){
+                final Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
                 startActivity(intent);
                 finish();
             }
         }, 2000);
-
+*/
     }
 
     class Params{
@@ -58,6 +58,12 @@ public class SplashScreen extends AppCompatActivity {
             MapsActivity.BuildingsList.buildings = new ArrayList<>();
             MapsActivity.BuildingsList.getBuildings();
             return null;
+        }
+
+        protected void onPostExecute(Void result){
+            final Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 }
