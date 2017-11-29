@@ -146,6 +146,7 @@
     <orderEntry type="library" name="com.google.maps.android:android-maps-utils-0.5" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-location-11.0.4" level="project" />
     <orderEntry type="library" name="com.google.android.gms:play-services-base-11.0.4" level="project" />
+    <orderEntry type="library" name="com.google.android.gms:play-services-places-11.0.4" level="project" />
     <orderEntry type="library" name="android-android-26" level="project" />
   </component>
 </module>

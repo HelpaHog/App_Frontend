@@ -13,13 +13,20 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
@@ -41,10 +48,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     RadioGroup floorSelector;
 
+    //create a reference for the places search bar
+    PlaceAutocompleteFragment placeAutoComplete;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        //Associate autocomplete fragment with a reference
+        placeAutoComplete = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete);
+        placeAutoComplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            //Handle selection of location from search list
+            @Override
+            public void onPlaceSelected(Place place) {
+                //Zoom down to the building selected by the user
+                CameraPosition pos = new CameraPosition.Builder().target(place.getLatLng()).zoom(19).build();
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos), 2000, null);
+            }
+
+            @Override
+            public void onError(Status status) {
+                Log.d("Maps", "An error occurred: " + status);
+            }
+        });
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -65,6 +94,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         setMapStyle();
 
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
         }else{
@@ -76,8 +107,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         BuildingsLoader loadBuildings = new BuildingsLoader();
         loadBuildings.execute(params);
 
+        setMarkerClickListener();
         setFloorChangeListener();
         setOnCameraMoveListener();
+    }
+
+    //Display route button when a marker is clicked
+    void setMarkerClickListener(){
+        mMap.setOnMarkerClickListener( new GoogleMap.OnMarkerClickListener(){
+            @Override
+            public boolean onMarkerClick(Marker m){
+                Toast.makeText(getApplicationContext(), "hey", Toast.LENGTH_LONG).show();
+             return false;
+            }
+        });
     }
 
     void setFloorChangeListener(){

@@ -1,64 +1,74 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="edu.uark.csce.helpahog.MapsActivity"
-    map:uiCompass="true"
-    map:mapType="normal"
-    map:cameraTargetLat="36.068693"
-    map:cameraTargetLng="-94.171468"
-    map:cameraZoom="17">
+ <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:map="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:orientation="vertical"
+     tools:context="edu.uark.csce.helpahog.MapsActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:textColor="#000000"
-        android:text=""
-        android:id="@+id/floor_indicator"
-        android:textSize="20dp"
-        />
+     <fragment
+         android:id="@+id/place_autocomplete"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+         />
 
-    <RadioGroup android:id="@+id/floor_selector"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="50dp">
-        <RadioButton
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        map:uiCompass="true"
+        map:mapType="normal"
+        map:cameraTargetLat="36.068693"
+        map:cameraTargetLng="-94.171468"
+        map:cameraZoom="17">
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:buttonTint="#FF0000"
-            android:textColor="#ff0000"
-            android:text="1"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="#FF0000"
-            android:textColor="#ff0000"
-            android:text="2"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="#FF0000"
-            android:textColor="#ff0000"
-            android:text="3"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="#FF0000"
-            android:textColor="#ff0000"
-            android:text="4"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:buttonTint="#FF0000"
-            android:textColor="#ff0000"
-            android:text="5"/>
-    </RadioGroup>
+            android:visibility="gone"
+            android:textColor="#000000"
+            android:text=""
+            android:id="@+id/floor_indicator"
+            android:textSize="20dp"
+            />
 
-
-
-</fragment>
+        <RadioGroup android:id="@+id/floor_selector"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="50dp">
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#FF0000"
+                android:textColor="#ff0000"
+                android:text="1"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#FF0000"
+                android:textColor="#ff0000"
+                android:text="2"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#FF0000"
+                android:textColor="#ff0000"
+                android:text="3"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#FF0000"
+                android:textColor="#ff0000"
+                android:text="4"/>
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="#FF0000"
+                android:textColor="#ff0000"
+                android:text="5"/>
+        </RadioGroup>
+    </fragment>
+ </LinearLayout>
