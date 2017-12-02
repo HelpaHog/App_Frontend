@@ -12,13 +12,13 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,6 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private ArrayList<Floor> indoorMap;
     private ArrayList<Building> buildings;
+    private ArrayList<LatLng> roomPositions = new ArrayList<>();
 
     private Building JBHT;
 
@@ -48,31 +49,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     RadioGroup floorSelector;
 
-    //create a reference for the places search bar
-    PlaceAutocompleteFragment placeAutoComplete;
+    //create a reference for the search bar
+    private AutoCompleteTextView actv;
 
+    //String array for building names
+    private ArrayList<String> bldgNames = new ArrayList<>();
+
+    //Marker used to indicate search locations
+    private Marker srchMark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
-        //Associate autocomplete fragment with a reference
-        placeAutoComplete = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.place_autocomplete);
-        placeAutoComplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            //Handle selection of location from search list
-            @Override
-            public void onPlaceSelected(Place place) {
-                //Zoom down to the building selected by the user
-                CameraPosition pos = new CameraPosition.Builder().target(place.getLatLng()).zoom(19).build();
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos), 2000, null);
-            }
-
-            @Override
-            public void onError(Status status) {
-                Log.d("Maps", "An error occurred: " + status);
-            }
-        });
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -94,8 +83,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         setMapStyle();
 
-        mMap.getUiSettings().setMapToolbarEnabled(false);
-
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
         }else{
@@ -107,20 +94,82 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         BuildingsLoader loadBuildings = new BuildingsLoader();
         loadBuildings.execute(params);
 
-        setMarkerClickListener();
         setFloorChangeListener();
         setOnCameraMoveListener();
     }
 
-    //Display route button when a marker is clicked
-    void setMarkerClickListener(){
-        mMap.setOnMarkerClickListener( new GoogleMap.OnMarkerClickListener(){
+    void initAutoComplete(){
+        //Create a reference to the autocomplete widget in our resource file
+        actv = (AutoCompleteTextView)findViewById(R.id.autocomplete);
+
+        //Create the list for the textview
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, bldgNames);
+        actv.setAdapter(adapter);
+
+        //Set click listener for the list provided by the autocomplete search bar
+        actv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
-            public boolean onMarkerClick(Marker m){
-                Toast.makeText(getApplicationContext(), "hey", Toast.LENGTH_LONG).show();
-             return false;
+            public void onItemClick (AdapterView<?> parent, View v, int index, long id){
+                /**Discern whether the selected item is a building or a room,
+                 * Buildings are limited to indexes 0 through 314
+                 * Rooms will be every index after 315
+                 */
+                int nameIndex = bldgNames.indexOf(actv.getText().toString());
+
+                //Handle clicks on buildings
+                if(nameIndex < 315) {
+                    buildingSearch(nameIndex);
+                }
+                //HandleClicks on rooms
+                else{
+                    //Get floor number to pass to the roomSearch function
+                    String text = actv.getText().toString();
+                    int floor = Integer.valueOf(text.substring(text.length() - 2, text.length() - 1));
+
+                    roomSearch(nameIndex, floor);
+                }
             }
         });
+    }
+
+    //Stub method to handle searches on buildings
+    void buildingSearch(int nameIndex){
+        //Retrieve LatLng location of the building selected
+        LatLng bldgPos = buildings.get(nameIndex).getPosition();
+
+        //Maneuver the camera to the specified location
+        CameraPosition pos = new CameraPosition.Builder().target(bldgPos).zoom(18).build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos), 3000, null);
+
+        //Remove marker placed in previous search
+        if (srchMark != null)
+            srchMark.remove(); //Remove markers from previous search
+
+        //Place a marker on the desired location of the search
+        srchMark = mMap.addMarker(new MarkerOptions().position(bldgPos));
+    }
+
+    //Stub method to handle searches on rooms
+    void roomSearch(int nameIndex, int floor){
+        //Subtract the indexes of the building portion of the array
+        int roomIndex = nameIndex - 315;
+
+        //Retrieve LatLng location of the Room selected from the roomPositions array
+        LatLng roomPos = roomPositions.get(roomIndex);
+
+        //Check the proper level on the floor selector
+        floorSelector.check(floor);
+
+        //Maneuver the camera to the specified location
+        CameraPosition pos = new CameraPosition.Builder().target(roomPos).zoom(19).build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos), 3000, null);
+
+        //Remove marker placed in previous search
+        if (srchMark != null)
+            srchMark.remove(); //Remove markers from previous search
+
+        //Place a marker on the desired location of the search
+        srchMark = mMap.addMarker(new MarkerOptions().position(roomPos));
     }
 
     void setFloorChangeListener(){
@@ -261,6 +310,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Building currentBuilding = new Building(buildingObject, context);
                     buildings.add(currentBuilding);
                     Log.i("BUILDING", buildingObject.getString("code"));
+
                     if(buildingObject.getString("code").equals("JBHT")){
                         JBHT = new Building(currentBuilding);
                     }
@@ -304,6 +354,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //Log.i("ADDING BUILDING", currentBuilding.getBuildingCode());
                     result.get(i).shape = mMap.addPolygon(currentBuilding.getPolygonOptions());
                     result.get(i).label = mMap.addMarker(currentBuilding.getLabelOptions());
+                    bldgNames.add(result.get(i).getBuildingName());
                 }
             }
 
@@ -316,9 +367,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Room room = floor.rooms.get(j);
                         room.shape = mMap.addPolygon(room.getShapeOptions());
                         room.label = mMap.addMarker(room.getLabelOptions());
+
+                        //Create separate array of room positions for use in searches
+                        roomPositions.add(room.getPosition());
+
+                        //Add rooms to the search autocomplete in the format Bldg Code: Room # (Floor #)
+                        bldgNames.add("JBHT " + "Room " + room.getRoomNumber() + " (Floor " + Integer.toString(i + 1) + ")" );
                     }
                 }
             }
+
+            //Initialize list of buildings and rooms once they've been loaded in
+            initAutoComplete();
         }
 
         private ArrayList<Floor> getIndoorMap(Building building){
@@ -334,37 +394,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 e.printStackTrace();
             }
             return building.indoorMap;
-        }
-    }
-
-    class IndoorMapLoader extends AsyncTask<Building, Void, ArrayList<Floor>>{
-        protected ArrayList<Floor> doInBackground(Building... buildings){
-            try {
-                if (buildings[0].HAS_INDOOR_MAP) {
-                    buildings[0].indoorMap = new ArrayList<>();
-                    JSONArray indoorArray = JSONProvider.getJSONFromFile(getApplicationContext(), R.raw.jbht_indoor);
-                    for (int j = 0; j < indoorArray.length(); j++) {
-                        buildings[0].indoorMap.add(new Floor(getApplicationContext(), indoorArray.getJSONArray(j)));
-                    }
-                }
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            return buildings[0].indoorMap;
-        }
-
-        protected void onPostExecute(ArrayList<Floor> results){
-            if(indoorMap == null){
-                indoorMap = results;
-                for(int i=0; i<results.size(); i++){
-                    Floor floor = results.get(i);
-                    for(int j=0; j < floor.rooms.size(); j++){
-                        Room room = floor.rooms.get(j);
-                        room.shape = mMap.addPolygon(room.getShapeOptions());
-                        room.label = mMap.addMarker(room.getLabelOptions());
-                    }
-                }
-            }
         }
     }
 

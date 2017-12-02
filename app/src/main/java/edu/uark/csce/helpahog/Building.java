@@ -31,6 +31,7 @@ public class Building {
     private LatLng position;
     public Marker label;
     private MarkerOptions labelOptions;
+    private String buildingName;
     private String buildingCode;
     private JSONObject json;
 
@@ -63,6 +64,7 @@ public class Building {
         try {
             position = new LatLng(Double.parseDouble(json.getString("latitude")), Double.parseDouble(json.getString("longitude")));
             shapeOptions = parseBuildingShape(json.getString("shape"));
+            buildingName = json.getString("name");
             buildingCode = json.getString("code");
             labelOptions = generateMarker(buildingCode, position).title(json.getString("name")).snippet(json.getString("address"));
 
@@ -142,8 +144,14 @@ public class Building {
         return shapeOptions;
     }
 
+    public LatLng getPosition(){ return position;}
+
     public MarkerOptions getLabelOptions(){
         return labelOptions;
+    }
+
+    public String getBuildingName(){
+        return buildingName;
     }
 
     public String getBuildingCode(){
@@ -241,6 +249,7 @@ class Room{
         }catch(JSONException e){
             e.printStackTrace();
         }
+        System.out.println("null");
         return null;
     }
 
@@ -285,6 +294,10 @@ class Room{
     public MarkerOptions getLabelOptions(){
         return labelOptions;
     }
+
+    public String getRoomNumber(){ return roomNumber; }
+
+    public LatLng getPosition(){ return position; }
 
     public void setLabelVisible(boolean selection){
         label.setVisible(selection);
