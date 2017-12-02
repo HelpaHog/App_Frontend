@@ -38,9 +38,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapsActivity"
+        <activity
+            android:name=".MapsActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:largeHeap="true"></activity>
+            android:largeHeap="true" />
     </application>
 
 </manifest>

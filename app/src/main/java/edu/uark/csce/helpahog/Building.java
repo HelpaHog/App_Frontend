@@ -87,7 +87,7 @@ public class Building {
 
         //Set night mode if time is before 6am or 6pm local time
         if(time <= 6 || time >= 18){
-            a=0xff; r=0x91; g=0x00; b=0x00;
+            a=0xff; r=0xff; g=0x55; b=0x55;
         }else{
             a=0xff; r=0xff; g=0x70; b=0x70;
         }

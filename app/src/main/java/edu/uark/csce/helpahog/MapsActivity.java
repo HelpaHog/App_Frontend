@@ -3,15 +3,19 @@ package edu.uark.csce.helpahog;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -23,6 +27,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -40,6 +46,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private ArrayList<Floor> indoorMap;
     private ArrayList<Building> buildings;
+    private ArrayList<Marker> bikeLoops;
+    private ArrayList<Marker> helpPhones;
+    private ArrayList<Marker> wheelchairEntrances;
+    private ArrayList<Marker> dining;
 
     private Building JBHT;
 
@@ -50,6 +60,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //create a reference for the places search bar
     PlaceAutocompleteFragment placeAutoComplete;
+
+    FloatingActionButton layersButton;
+    FloatingActionButton bikeButton;
+    FloatingActionButton helpPhoneButton;
+    FloatingActionButton wheelChairButton;
+    FloatingActionButton diningButton;
 
 
     @Override
@@ -79,12 +95,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        layersButton = (FloatingActionButton)findViewById(R.id.layersButton);
+        bikeButton = (FloatingActionButton)findViewById(R.id.bikeLayerButton);
+        helpPhoneButton = (FloatingActionButton)findViewById(R.id.helpPhoneButton);
+        wheelChairButton = (FloatingActionButton)findViewById(R.id.accessibleButton);
+        diningButton = (FloatingActionButton)findViewById(R.id.diningButton);
+
         floorSelector = (RadioGroup)findViewById(R.id.floor_selector);
         floorSelector.setVisibility(RadioGroup.GONE);
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
+
 
     }
 
@@ -94,7 +117,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         setMapStyle();
 
-        mMap.getUiSettings().setMapToolbarEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(true);
+        mMap.getUiSettings().setIndoorLevelPickerEnabled(false);
 
         if(checkLocationPermission()) {
             mMap.setMyLocationEnabled(true);
@@ -107,21 +131,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         BuildingsLoader loadBuildings = new BuildingsLoader();
         loadBuildings.execute(params);
 
-        setMarkerClickListener();
         setFloorChangeListener();
         setOnCameraMoveListener();
     }
 
-    //Display route button when a marker is clicked
-    void setMarkerClickListener(){
-        mMap.setOnMarkerClickListener( new GoogleMap.OnMarkerClickListener(){
-            @Override
-            public boolean onMarkerClick(Marker m){
-                Toast.makeText(getApplicationContext(), "hey", Toast.LENGTH_LONG).show();
-             return false;
-            }
-        });
-    }
+
 
     void setFloorChangeListener(){
         floorSelector.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -196,6 +210,113 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+
+        layersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(bikeButton.getVisibility() == bikeButton.VISIBLE) {
+                    bikeButton.setVisibility(bikeButton.GONE);
+                    helpPhoneButton.setVisibility(helpPhoneButton.GONE);
+                    wheelChairButton.setVisibility(wheelChairButton.GONE);
+                    diningButton.setVisibility(diningButton.GONE);
+                }else{
+                    bikeButton.setVisibility(bikeButton.VISIBLE);
+                    helpPhoneButton.setVisibility(helpPhoneButton.VISIBLE);
+                    wheelChairButton.setVisibility(wheelChairButton.VISIBLE);
+                    diningButton.setVisibility(diningButton.VISIBLE);
+                }
+            }
+        });
+
+        bikeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(bikeLoops == null){
+                    bikeLoops = addExtrasToMap(loadExtras(R.raw.bike_racks, R.mipmap.bike_icon_scaled));
+                }else {
+
+                    if (bikeLoops.get(0).isVisible()) {
+                        for (int i = 0; i < bikeLoops.size(); i++) {
+                            bikeLoops.get(i).setVisible(false);
+                        }
+                    } else {
+                        for (int i = 0; i < bikeLoops.size(); i++) {
+                            bikeLoops.get(i).setVisible(true);
+                        }
+                    }
+                }
+            }
+        });
+
+        helpPhoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(helpPhones == null){
+                    helpPhones = addExtrasToMap(loadExtras(R.raw.emergency_boxes, R.mipmap.emergency_icon_scaled));
+                }else {
+
+                    if (helpPhones.get(0).isVisible()) {
+                        for (int i = 0; i < helpPhones.size(); i++) {
+                            helpPhones.get(i).setVisible(false);
+                        }
+                    } else {
+                        for (int i = 0; i < helpPhones.size(); i++) {
+                            helpPhones.get(i).setVisible(true);
+                        }
+                    }
+                }
+            }
+        });
+
+        wheelChairButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(wheelchairEntrances == null){
+                    wheelchairEntrances = addExtrasToMap(loadExtras(R.raw.accessable_points, R.mipmap.wheelchair_scaled));
+                }else {
+
+                    if (wheelchairEntrances.get(0).isVisible()) {
+                        for (int i = 0; i < wheelchairEntrances.size(); i++) {
+                            wheelchairEntrances.get(i).setVisible(false);
+                        }
+                    } else {
+                        for (int i = 0; i < wheelchairEntrances.size(); i++) {
+                            wheelchairEntrances.get(i).setVisible(true);
+                        }
+                    }
+                }
+            }
+        });
+
+        diningButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(dining == null){
+                    ArrayList<MarkerOptions> options = loadExtras(R.raw.dining, R.mipmap.food_scaled);
+                    JSONArray jsonArray = JSONProvider.getJSONFromFile(getApplicationContext(), R.raw.dining);
+                    try {
+                        for (int i = 0; i < options.size(); i++) {
+                            options.get(i).title(jsonArray.getJSONObject(i).getString("name"));
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+                    dining = addExtrasToMap(options);
+                }else {
+
+                    if (dining.get(0).isVisible()) {
+                        for (int i = 0; i < dining.size(); i++) {
+                            dining.get(i).setVisible(false);
+                        }
+                    } else {
+                        for (int i = 0; i < dining.size(); i++) {
+                            dining.get(i).setVisible(true);
+                        }
+                    }
+                }
+            }
+        });
     }
 
 
@@ -226,8 +347,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //This could be used later to pass parameters to the AsyncTasks
     class Params{
-        public Params(){
+        int fileId;
+        int iconId;
 
+        public Params(){
+        }
+
+        public Params(int _fileId, int _iconId){
+            fileId = _fileId;
+            iconId = _iconId;
         }
     }
 
@@ -272,29 +400,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    class BuildingsLoader extends AsyncTask<Params, Void, ArrayList<Building>>{
-        protected ArrayList<Building> doInBackground(Params... params){
+    public ArrayList<Marker> addExtrasToMap(ArrayList<MarkerOptions> markerList){
+
+        ArrayList<Marker> markers = new ArrayList<>();
+        for(int i=0; i<markerList.size(); i++){
+            markers.add(mMap.addMarker(markerList.get(i)));
+        }
+        return markers;
+    }
+
+    public ArrayList<MarkerOptions> loadExtras(int fileId, int iconId){
+        JSONArray jsonArray = JSONProvider.getJSONFromFile(getApplicationContext(), fileId);
+        ArrayList<MarkerOptions> markerOptionsList = new ArrayList<>();
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                LatLng position = new LatLng(jsonArray.getJSONObject(i).getDouble("latitude"), jsonArray.getJSONObject(i).getDouble("longitude"));
+                MarkerOptions options = new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(iconId));
+                options.visible(true);
+                markerOptionsList.add(options);
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return markerOptionsList;
+    }
+
+    class BuildingsLoader extends AsyncTask<Params, Void, ArrayList<Building>> {
+        protected ArrayList<Building> doInBackground(Params... params) {
             ArrayList<Building> buildings = new ArrayList<>();
             JSONArray jsonArray = JSONProvider.getJSONFromFile(getApplicationContext(), R.raw.buildings);
 
-
-           /* for(int i=0; i<jsonArray.length(); i++){
-                try {
-                    JSONObject buildingObject = jsonArray.getJSONObject(i);
-                    Building currentBuilding = new Building(buildingObject, getApplicationContext());
-                    buildings.add(currentBuilding);
-                    //Log.i("BUIDING", buildingObject.getString("code"));
-
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-            }*/
-           buildings = BuildingsList.buildings;
+            buildings = BuildingsList.buildings;
             return buildings;
         }
 
-        protected void onPostExecute(ArrayList<Building> result){
-            if(buildings == null) {
+        protected void onPostExecute(ArrayList<Building> result) {
+            if (buildings == null) {
                 for (int i = 0; i < result.size(); i++) {
                     /*if (result.get(i).getBuildingCode().equals("JBHT"))
                         JBHT = result.get(i);*/
@@ -308,11 +451,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
 
-            if(indoorMap == null){
+            if (indoorMap == null) {
                 indoorMap = getIndoorMap(BuildingsList.JBHT);
-                for(int i=0; i<indoorMap.size(); i++){
+                for (int i = 0; i < indoorMap.size(); i++) {
                     Floor floor = indoorMap.get(i);
-                    for(int j=0; j < floor.rooms.size(); j++){
+                    for (int j = 0; j < floor.rooms.size(); j++) {
                         Room room = floor.rooms.get(j);
                         room.shape = mMap.addPolygon(room.getShapeOptions());
                         room.label = mMap.addMarker(room.getLabelOptions());
@@ -321,7 +464,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
-        private ArrayList<Floor> getIndoorMap(Building building){
+        private ArrayList<Floor> getIndoorMap(Building building) {
             try {
                 if (building.HAS_INDOOR_MAP) {
                     building.indoorMap = new ArrayList<>();
@@ -330,55 +473,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         building.indoorMap.add(new Floor(getApplicationContext(), indoorArray.getJSONArray(j)));
                     }
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return building.indoorMap;
-        }
-    }
-
-    class IndoorMapLoader extends AsyncTask<Building, Void, ArrayList<Floor>>{
-        protected ArrayList<Floor> doInBackground(Building... buildings){
-            try {
-                if (buildings[0].HAS_INDOOR_MAP) {
-                    buildings[0].indoorMap = new ArrayList<>();
-                    JSONArray indoorArray = JSONProvider.getJSONFromFile(getApplicationContext(), R.raw.jbht_indoor);
-                    for (int j = 0; j < indoorArray.length(); j++) {
-                        buildings[0].indoorMap.add(new Floor(getApplicationContext(), indoorArray.getJSONArray(j)));
-                    }
-                }
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            return buildings[0].indoorMap;
-        }
-
-        protected void onPostExecute(ArrayList<Floor> results){
-            if(indoorMap == null){
-                indoorMap = results;
-                for(int i=0; i<results.size(); i++){
-                    Floor floor = results.get(i);
-                    for(int j=0; j < floor.rooms.size(); j++){
-                        Room room = floor.rooms.get(j);
-                        room.shape = mMap.addPolygon(room.getShapeOptions());
-                        room.label = mMap.addMarker(room.getLabelOptions());
-                    }
-                }
-            }
-        }
-    }
-
-    public class ExtraMarkerLoader extends AsyncTask<Params, Void, Void>{
-        protected Void doInBackground(Params... params){
-
-            return null;
-        }
-    }
-
-    public class ParkingLotLoader extends AsyncTask<Params, Void, Void>{
-        protected Void doInBackground(Params... params){
-
-            return null;
         }
     }
 }

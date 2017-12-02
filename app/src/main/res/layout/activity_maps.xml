@@ -1,4 +1,5 @@
  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res-auto"
      xmlns:map="http://schemas.android.com/apk/res-auto"
      xmlns:tools="http://schemas.android.com/tools"
      android:layout_width="match_parent"
@@ -23,6 +24,7 @@
         map:cameraTargetLat="36.068693"
         map:cameraTargetLng="-94.171468"
         map:cameraZoom="17">
+
 
         <TextView
             android:layout_width="wrap_content"
@@ -70,5 +72,68 @@
                 android:textColor="#ff0000"
                 android:text="5"/>
         </RadioGroup>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/layersButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="60dp"
+            android:layout_marginRight="10dp"
+            android:backgroundTint="#FF5555"
+            app:srcCompat="@drawable/ic_layers_white_24dp"
+            app:fabSize="mini"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/bikeLayerButton"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="105dp"
+            android:layout_marginRight="10dp"
+            android:padding="0dp"
+            android:backgroundTint="#9e00d2"
+            app:srcCompat="@mipmap/bike_icon_nobackground"
+            app:fabSize="mini"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/helpPhoneButton"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="150dp"
+            android:layout_marginRight="10dp"
+            android:padding="0dp"
+            android:backgroundTint="#008aff"
+            app:srcCompat="@mipmap/emergency_icon_nobackground"
+            app:fabSize="mini"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/accessibleButton"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="195dp"
+            android:layout_marginRight="10dp"
+            android:padding="0dp"
+            android:backgroundTint="#008aff"
+            app:srcCompat="@mipmap/wheelchair_nobackground"
+            app:fabSize="mini"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diningButton"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="240dp"
+            android:layout_marginRight="10dp"
+            android:padding="0dp"
+            android:backgroundTint="#ff9946"
+            app:srcCompat="@mipmap/food_nobackground"
+            app:fabSize="mini"/>
     </fragment>
  </LinearLayout>

@@ -33,16 +33,6 @@ public class SplashScreen extends AppCompatActivity {
         BuildingsLoader loader = new BuildingsLoader();
         loader.execute(params);
 
-
-        /*new Timer().schedule(new TimerTask(){
-            @Override
-            public void run(){
-                final Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        }, 2000);
-*/
     }
 
     class Params{
