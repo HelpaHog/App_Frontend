@@ -4,10 +4,15 @@
  * gradle plugin from the resource data it found. It
  * should not be modified by hand.
  */
-package android.support.coreui;
+package android.support.v7.recyclerview;
 
 public final class R {
     public static final class attr {
+        public static final int fastScrollEnabled = 0x7f030095;
+        public static final int fastScrollHorizontalThumbDrawable = 0x7f030096;
+        public static final int fastScrollHorizontalTrackDrawable = 0x7f030097;
+        public static final int fastScrollVerticalThumbDrawable = 0x7f030098;
+        public static final int fastScrollVerticalTrackDrawable = 0x7f030099;
         public static final int font = 0x7f03009a;
         public static final int fontProviderAuthority = 0x7f03009c;
         public static final int fontProviderCerts = 0x7f03009d;
@@ -17,6 +22,10 @@ public final class R {
         public static final int fontProviderQuery = 0x7f0300a1;
         public static final int fontStyle = 0x7f0300a2;
         public static final int fontWeight = 0x7f0300a3;
+        public static final int layoutManager = 0x7f0300c5;
+        public static final int reverseLayout = 0x7f03012d;
+        public static final int spanCount = 0x7f03013d;
+        public static final int stackFromEnd = 0x7f030143;
     }
     public static final class bool {
         public static final int abc_action_bar_embed_tabs = 0x7f040000;
@@ -33,6 +42,12 @@ public final class R {
         public static final int compat_button_padding_horizontal_material = 0x7f06004c;
         public static final int compat_button_padding_vertical_material = 0x7f06004d;
         public static final int compat_control_corner_material = 0x7f06004e;
+        public static final int fastscroll_default_thickness = 0x7f060078;
+        public static final int fastscroll_margin = 0x7f060079;
+        public static final int fastscroll_minimum_range = 0x7f06007a;
+        public static final int item_touch_helper_max_drag_scroll_per_frame = 0x7f060082;
+        public static final int item_touch_helper_swipe_escape_max_velocity = 0x7f060083;
+        public static final int item_touch_helper_swipe_escape_velocity = 0x7f060084;
         public static final int notification_action_icon_size = 0x7f060085;
         public static final int notification_action_text_size = 0x7f060086;
         public static final int notification_big_circle_margin = 0x7f060087;
@@ -77,6 +92,7 @@ public final class R {
         public static final int icon_group = 0x7f080058;
         public static final int info = 0x7f08005c;
         public static final int italic = 0x7f08005d;
+        public static final int item_touch_helper_previous_elevation = 0x7f08005e;
         public static final int line1 = 0x7f080063;
         public static final int line3 = 0x7f080064;
         public static final int normal = 0x7f080071;
@@ -125,5 +141,17 @@ public final class R {
         public static final int FontFamilyFont_font = 0;
         public static final int FontFamilyFont_fontStyle = 1;
         public static final int FontFamilyFont_fontWeight = 2;
+        public static final int[] RecyclerView = { 0x010100c4, 0x010100f1, 0x7f030095, 0x7f030096, 0x7f030097, 0x7f030098, 0x7f030099, 0x7f0300c5, 0x7f03012d, 0x7f03013d, 0x7f030143 };
+        public static final int RecyclerView_android_orientation = 0;
+        public static final int RecyclerView_android_descendantFocusability = 1;
+        public static final int RecyclerView_fastScrollEnabled = 2;
+        public static final int RecyclerView_fastScrollHorizontalThumbDrawable = 3;
+        public static final int RecyclerView_fastScrollHorizontalTrackDrawable = 4;
+        public static final int RecyclerView_fastScrollVerticalThumbDrawable = 5;
+        public static final int RecyclerView_fastScrollVerticalTrackDrawable = 6;
+        public static final int RecyclerView_layoutManager = 7;
+        public static final int RecyclerView_reverseLayout = 8;
+        public static final int RecyclerView_spanCount = 9;
+        public static final int RecyclerView_stackFromEnd = 10;
     }
 }
