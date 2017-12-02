@@ -1,6 +1,7 @@
 package edu.uark.csce.helpahog;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -50,6 +52,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<Marker> wheelchairEntrances;
     private ArrayList<Marker> dining;
     private ArrayList<LatLng> roomPositions = new ArrayList<>();
+
+    //Boolean to indicate a search is being performed
+    private boolean isSearching = false;
 
     private Building JBHT;
 
@@ -134,6 +139,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         actv.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick (AdapterView<?> parent, View v, int index, long id){
+                //close the keyboard
+                InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+
                 /**Discern whether the selected item is a building or a room,
                  * Buildings are limited to indexes 0 through 314
                  * Rooms will be every index after 315
@@ -158,6 +167,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Stub method to handle searches on buildings
     void buildingSearch(int nameIndex){
+        isSearching = true;
         //Retrieve LatLng location of the building selected
         LatLng bldgPos = buildings.get(nameIndex).getPosition();
 
@@ -175,6 +185,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //Stub method to handle searches on rooms
     void roomSearch(int nameIndex, int floor){
+        isSearching = true;
         //Subtract the indexes of the building portion of the array
         int roomIndex = nameIndex - 315;
 
@@ -262,11 +273,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             buildings.get(i).setBuildingVisible(false);
                             buildings.get(i).setLabelVisible(false);
                         }
-
-                        floorSelector.check(1);
+                        if(isSearching) {
+                            floorSelector.check(1);
+                        }
                         floorSelector.setVisibility(RadioGroup.VISIBLE);
                     }
                 }
+                isSearching = false;
             }
         });
 
@@ -458,6 +471,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
         }
+    }
+
+    public ArrayList<Marker> addExtrasToMap(ArrayList<MarkerOptions> markerList){
+
+        ArrayList<Marker> markers = new ArrayList<>();
+        for(int i=0; i<markerList.size(); i++){
+            markers.add(mMap.addMarker(markerList.get(i)));
+        }
+        return markers;
+    }
+
+    public ArrayList<MarkerOptions> loadExtras(int fileId, int iconId){
+        JSONArray jsonArray = JSONProvider.getJSONFromFile(getApplicationContext(), fileId);
+        ArrayList<MarkerOptions> markerOptionsList = new ArrayList<>();
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                LatLng position = new LatLng(jsonArray.getJSONObject(i).getDouble("latitude"), jsonArray.getJSONObject(i).getDouble("longitude"));
+                MarkerOptions options = new MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(iconId));
+                options.visible(true);
+                markerOptionsList.add(options);
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return markerOptionsList;
     }
 
     class BuildingsLoader extends AsyncTask<Params, Void, ArrayList<Building>>{
