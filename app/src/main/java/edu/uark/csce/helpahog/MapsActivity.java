@@ -53,7 +53,7 @@ import org.jsoup.nodes.Document;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener, GoogleMap.CancelableCallback{
 
     private GoogleMap mMap;
     private ArrayList<Floor> indoorMap;
@@ -202,6 +202,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Place a marker on the desired location of the search
         srchMark = mMap.addMarker(new MarkerOptions().position(bldgPos));
+        srchMark.setTag(0);
     }
 
     //Stub method to handle searches on rooms
@@ -213,12 +214,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Retrieve LatLng location of the Room selected from the roomPositions array
         LatLng roomPos = roomPositions.get(roomIndex);
 
-        //Check the proper level on the floor selector
-        floorSelector.check(floor);
+
 
         //Maneuver the camera to the specified location
         CameraPosition pos = new CameraPosition.Builder().target(roomPos).zoom(19).build();
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos), 3000, null);
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(pos), 3000, this);
+
+        floorSelector.check(floor);
+        indoorMap.get(floor-1).setRoomLabelsVisible(true);
+        indoorMap.get(floor-1).setRoomsVisible(true);
 
         //Remove marker placed in previous search
         if (srchMark != null)
@@ -226,6 +230,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Place a marker on the desired location of the search
         srchMark = mMap.addMarker(new MarkerOptions().position(roomPos));
+        srchMark.setTag(0);
+    }
+
+    public void onFinish(){
+        isSearching = false;
+    }
+
+    public void onCancel(){
+        isSearching = false;
     }
 
     void setFloorChangeListener(){
@@ -294,13 +307,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             buildings.get(i).setBuildingVisible(false);
                             buildings.get(i).setLabelVisible(false);
                         }
-                        if(isSearching) {
+                        if(!isSearching) {
                             floorSelector.check(1);
+                            indoorMap.get(0).setRoomLabelsVisible(true);
+                            indoorMap.get(0).setRoomsVisible(true);
                         }
                         floorSelector.setVisibility(RadioGroup.VISIBLE);
                     }
                 }
-                isSearching = false;
             }
         });
 
@@ -700,7 +714,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Room room = floor.rooms.get(j);
                         room.shape = mMap.addPolygon(room.getShapeOptions());
                         room.label = mMap.addMarker(room.getLabelOptions());
-
+                        room.label.setTag(0);
                         //Create separate array of room positions for use in searches
                         roomPositions.add(room.getPosition());
 
