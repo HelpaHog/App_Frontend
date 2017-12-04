@@ -33,7 +33,9 @@ public class Building {
     private MarkerOptions labelOptions;
     private String buildingName;
     private String buildingCode;
+    private String buildingAddress;
     private JSONObject json;
+    private int id;
 
     public ArrayList<Floor> indoorMap;
 
@@ -66,7 +68,9 @@ public class Building {
             shapeOptions = parseBuildingShape(json.getString("shape"));
             buildingName = json.getString("name");
             buildingCode = json.getString("code");
-            labelOptions = generateMarker(buildingCode, position).title(json.getString("name")).snippet(json.getString("address"));
+            buildingAddress = json.getString("address") + "\n" + json.getString("city") + ", " + json.getString("state") + " " + json.getString("zip");
+            labelOptions = generateMarker(buildingCode, position).snippet(json.getString("address"));
+            id = json.getInt("id");
 
             if(buildingCode.equals("JBHT"))
                 HAS_INDOOR_MAP = true;
@@ -157,6 +161,16 @@ public class Building {
     public String getBuildingCode(){
         return buildingCode;
     }
+
+    public String getBuildingAddress(){
+        return buildingAddress;
+    }
+
+    public int getId(){
+        return id;
+    }
+
+
 }
 
 class Floor{

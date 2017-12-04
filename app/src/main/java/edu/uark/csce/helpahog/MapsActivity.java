@@ -2,12 +2,16 @@ package edu.uark.csce.helpahog;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
@@ -16,12 +20,16 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ListView;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -37,12 +45,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener{
 
     private GoogleMap mMap;
     private ArrayList<Floor> indoorMap;
@@ -52,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<Marker> wheelchairEntrances;
     private ArrayList<Marker> dining;
     private ArrayList<LatLng> roomPositions = new ArrayList<>();
+    private ArrayList<EmergencyContact> emergencyNumbers = new ArrayList<>();
 
     //Boolean to indicate a search is being performed
     private boolean isSearching = false;
@@ -101,6 +113,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
 
+        emergencyNumbers.add(new EmergencyContact("UAPD", "4795752222"));
+        emergencyNumbers.add(new EmergencyContact("SAFE Ride", "4795757233"));
+        emergencyNumbers.add(new EmergencyContact("Health Center", "4795754451"));
+        emergencyNumbers.add(new EmergencyContact("Mental Health Crisis", "4795755276"));
+
 
     }
 
@@ -126,7 +143,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         setFloorChangeListener();
         setOnCameraMoveListener();
+        mMap.setInfoWindowAdapter(this);
+        mMap.setOnInfoWindowClickListener(this);
     }
+
+
     void initAutoComplete(){
         //Create a reference to the autocomplete widget in our resource file
         actv = (AutoCompleteTextView)findViewById(R.id.autocomplete);
@@ -304,7 +325,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 if(bikeLoops == null){
-                    bikeLoops = addExtrasToMap(loadExtras(R.raw.bike_racks, R.mipmap.bike_icon_scaled));
+                    bikeLoops = addExtrasToMap(loadExtras(R.raw.bike_racks, R.mipmap.bike_icon_scaled), 0);
                 }else {
 
                     if (bikeLoops.get(0).isVisible()) {
@@ -324,7 +345,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 if(helpPhones == null){
-                    helpPhones = addExtrasToMap(loadExtras(R.raw.emergency_boxes, R.mipmap.emergency_icon_scaled));
+                    helpPhones = addExtrasToMap(loadExtras(R.raw.emergency_boxes, R.mipmap.emergency_icon_scaled), 3);
                 }else {
 
                     if (helpPhones.get(0).isVisible()) {
@@ -344,7 +365,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 if(wheelchairEntrances == null){
-                    wheelchairEntrances = addExtrasToMap(loadExtras(R.raw.accessable_points, R.mipmap.wheelchair_scaled));
+                    wheelchairEntrances = addExtrasToMap(loadExtras(R.raw.accessable_points, R.mipmap.wheelchair_scaled), 0);
                 }else {
 
                     if (wheelchairEntrances.get(0).isVisible()) {
@@ -374,7 +395,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }catch(Exception e){
                         e.printStackTrace();
                     }
-                    dining = addExtrasToMap(options);
+                    dining = addExtrasToMap(options, 2);
                 }else {
 
                     if (dining.get(0).isVisible()) {
@@ -443,6 +464,145 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        if((int)marker.getTag() == 1) {
+            View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.building_infowindow, null, false);
+
+            TextView title = view.findViewById(R.id.building_title);
+            TextView description = view.findViewById(R.id.building_description);
+
+            title.setText(buildings.get(Integer.parseInt(marker.getTitle())).getBuildingName());
+            description.setText(buildings.get(Integer.parseInt(marker.getTitle())).getBuildingAddress());
+
+
+            return view;
+        }
+
+        if((int)marker.getTag() == 2){
+            try {
+                JSONObject diningJSON = JSONProvider.getJSONFromFile(getApplicationContext(), R.raw.dining).getJSONObject(Integer.parseInt(marker.getTitle()));
+
+                View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.building_infowindow, null, false);
+
+                TextView title = view.findViewById(R.id.building_title);
+                TextView description = view.findViewById(R.id.building_description);
+
+                title.setText(diningJSON.getString("name"));
+
+                String desc = diningJSON.getString("description");
+
+                Document doc = Jsoup.parse(desc);
+                desc = doc.body().toString();
+                desc = desc.replaceAll("<[^>]*>", "");
+
+                description.setText(desc);
+
+                return view;
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+
+        if((int)marker.getTag() == 3){
+            View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.emergency_infowindow, null, false);
+            return view;
+        }
+        return null;
+    }
+
+
+
+    @Override
+    public View getInfoWindow(Marker marker){
+
+        return null;
+    }
+
+
+    public void onInfoWindowClick(Marker marker){
+        if((int)marker.getTag() == 1){
+            String url = "https://directory.uark.edu/buildings/" + buildings.get(Integer.parseInt(marker.getTitle())).getId();
+
+            Intent intent  = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
+        }if((int)marker.getTag() == 2){
+            String url = "https://www.dineoncampus.com/razorbacks/";
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
+        }if((int)marker.getTag() == 3){
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setTitle("Select a number to call");
+
+
+            View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.emergency_dialog, null, false);
+            EmergencyListAdapter listAdapter = new EmergencyListAdapter(getApplicationContext(), emergencyNumbers);
+
+            ListView listView = view.findViewById(R.id.emergency_list);
+            listView.setAdapter(listAdapter);
+
+            dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
+
+            dialogBuilder.setView(view);
+            dialogBuilder.show();
+        }
+    }
+
+    public void emergencyCall(String number) {
+        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + number));
+        startActivity(intent);
+    }
+
+    class EmergencyContact{
+        String name;
+        String number;
+
+        public EmergencyContact(String _name, String _number){
+            name = _name;
+            number = _number;
+        }
+    }
+
+    public class EmergencyListAdapter extends ArrayAdapter<EmergencyContact>{
+        public EmergencyListAdapter(Context context, ArrayList<EmergencyContact> contacts){
+            super(context, 0, contacts);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent){
+            final EmergencyContact contact = getItem(position);
+
+            if(convertView == null){
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.emergency_listitem, parent, false);
+            }
+
+            TextView name = (TextView)convertView.findViewById(R.id.emergency_name);
+            TextView number = (TextView)convertView.findViewById(R.id.emergency_number);
+
+            name.setText(contact.name);
+            number.setText(contact.number);
+
+            convertView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    emergencyCall(contact.number);
+                }
+            });
+
+            return convertView;
+        }
+    }
+
+
     public static class BuildingsList{
         public static ArrayList<Building> buildings;
         public static Building JBHT;
@@ -473,11 +633,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public ArrayList<Marker> addExtrasToMap(ArrayList<MarkerOptions> markerList){
+    public ArrayList<Marker> addExtrasToMap(ArrayList<MarkerOptions> markerList, int tag){
 
         ArrayList<Marker> markers = new ArrayList<>();
         for(int i=0; i<markerList.size(); i++){
-            markers.add(mMap.addMarker(markerList.get(i)));
+            Marker marker = mMap.addMarker(markerList.get(i));
+            marker.setTag(tag);
+            if(tag != 0) {
+                marker.setTitle(Integer.toString(i));
+            }
+            markers.add(marker);
         }
         return markers;
     }
@@ -500,6 +665,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return markerOptionsList;
     }
 
+
     class BuildingsLoader extends AsyncTask<Params, Void, ArrayList<Building>>{
         protected ArrayList<Building> doInBackground(Params... params){
             ArrayList<Building> buildings = new ArrayList<>();
@@ -519,7 +685,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Building currentBuilding = result.get(i);
                     //Log.i("ADDING BUILDING", currentBuilding.getBuildingCode());
                     result.get(i).shape = mMap.addPolygon(currentBuilding.getPolygonOptions());
-                    result.get(i).label = mMap.addMarker(currentBuilding.getLabelOptions());
+                    result.get(i).label = mMap.addMarker(currentBuilding.getLabelOptions().title(Integer.toString(i)));
+                    result.get(i).label.setTag(1);
                     bldgNames.add(result.get(i).getBuildingName());
                 }
             }
